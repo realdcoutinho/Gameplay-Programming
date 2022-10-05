@@ -67,3 +67,4 @@ void BaseAgent::TrimToWorld(const Elite::Vector2& bottomLeft, const Elite::Vecto
 
 	SetPosition(pos);
 }
+

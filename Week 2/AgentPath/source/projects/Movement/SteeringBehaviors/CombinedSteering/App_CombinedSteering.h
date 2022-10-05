@@ -40,17 +40,17 @@ private:
 
 	//blended steering
 	BlendedSteering* m_pBlendedSteering = nullptr;
-	//Wander* m_pDrunkWander = nullptr;
+	Wander* m_pDrunkWander = nullptr;
 	Seek* m_pSeek = nullptr;
-	Flee* m_pDrunkWander = nullptr; // replace with wander
+	//Flee* m_pDrunkWander = nullptr; // replace with wander
 
 
 
 
 	//priority steering
 	PrioritySteering* m_pPrioritySteering = nullptr;
-	//Wander* m_pSoberWander = nullptr;
-	Flee* m_pSoberWander = nullptr; // delete after
+	Wander* m_pSoberWander = nullptr;
+	//Flee* m_pSoberWander = nullptr; // delete after
 	Flee* m_pFlee = nullptr;
 };
 #endif

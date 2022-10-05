@@ -27,8 +27,8 @@ void App_CombinedSteering::Start()
 	DEBUGRENDERER2D->GetActiveCamera()->SetCenter(Elite::Vector2(m_TrimWorldSize / 1.5f, m_TrimWorldSize / 2));
 
 	m_pSeek = new Seek();
-	m_pDrunkWander = new Flee();
-	//m_pDrunkWander->SetWanderOffset(0);
+	m_pDrunkWander = new Wander();
+	m_pDrunkWander->SetWanderOffSet(6);
 	m_pBlendedSteering = new BlendedSteering({ {m_pSeek, 0.5f}, {m_pDrunkWander, 0.5f} });
 
 	m_pDrunkAgent = new SteeringAgent();
@@ -38,7 +38,7 @@ void App_CombinedSteering::Start()
 	m_pDrunkAgent->SetBodyColor({ 1, 0, 0 });
 	m_pDrunkAgent->SetMass(0.3f);
 
-	m_pSoberWander = new Flee(); //substitute to wander
+	m_pSoberWander = new Wander();
 	m_pFlee = new Flee();
 	m_pPrioritySteering = new PrioritySteering({m_pFlee, m_pSoberWander});
 
@@ -48,7 +48,6 @@ void App_CombinedSteering::Start()
 	m_pEvadingAgent->SetAutoOrient(true);
 	m_pEvadingAgent->SetBodyColor({ 1, 0, 0 });
 	m_pEvadingAgent->SetMass(0.3f);
-
 }
 
 void App_CombinedSteering::Update(float deltaTime)
