@@ -50,7 +50,7 @@ private:
 	Seek* m_pSeekBehavior = nullptr;
 	Separation* m_pSeparationBehavior = nullptr;
 	Cohesion* m_pCohesionBehavior = nullptr;
-	//VelocityMatch* m_pVelMatchBehavior = nullptr;
+	VelocityMatch* m_pVelMatchBehavior = nullptr;
 	Wander* m_pWanderBehavior = nullptr;
 	//Evade* m_pEvadeBehavior = nullptr;
 

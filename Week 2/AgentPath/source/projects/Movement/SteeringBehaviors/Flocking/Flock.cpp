@@ -27,6 +27,7 @@ Flock::Flock(
 	m_pWanderBehavior = new Wander();
 	m_pCohesionBehavior = new Cohesion(this);
 	m_pSeparationBehavior = new Separation(this);
+	m_pVelMatchBehavior = new VelocityMatch(this);
 
 
 	m_Agents.resize(m_FlockSize);
@@ -36,10 +37,12 @@ Flock::Flock(
 		m_Agents[i] = new SteeringAgent();
 		m_Agents[i]->SetSteeringBehavior(m_pCohesionBehavior);
 		m_Agents[i]->SetPosition(Elite::Vector2(randomFloat(0, m_WorldSize), randomFloat(0, m_WorldSize)));
-		m_Agents[i]->SetMaxLinearSpeed(15.0f);
+		m_Agents[i]->SetMaxLinearSpeed(60.0f);
 		m_Agents[i]->SetAutoOrient(true);
 		////pAgent->SetBodyColor({ 1, 0, 0, 0 });
 		m_Agents[i]->SetMass(0.3f);
+
+		m_Agents[i]->SetLinearVelocity({ randomVector2(0.0f, 60.0f) });
 	}
 }
 
@@ -50,6 +53,7 @@ Flock::~Flock()
 	SAFE_DELETE(m_pWanderBehavior);
 	SAFE_DELETE(m_pCohesionBehavior);
 	SAFE_DELETE(m_pSeparationBehavior);
+	SAFE_DELETE(m_pVelMatchBehavior);
 
 
 	SAFE_DELETE(m_pBlendedSteering);
@@ -86,11 +90,11 @@ void Flock::Update(float deltaT)
 
 void Flock::Render(float deltaT)
 {
-	for (size_t index{}; index < m_Agents.size(); ++index)
-	{
-		m_Agents[index]->Render(deltaT);
-		m_Agents[index]->SetRenderBehavior(true);
-	}
+	//for (size_t index{}; index < m_Agents.size(); ++index)
+	//{
+	//	//m_Agents[index]->Render(deltaT);
+	//	//m_Agents[index]->SetRenderBehavior(true);
+	//}
 }
 
 
@@ -156,7 +160,6 @@ void Flock::RegisterNeighbors(SteeringAgent* pAgent)
 			
 		++m_NrOfNeighbors;
 	}
-	std::cout << m_NrOfNeighbors << '\n';
 }
 
 Elite::Vector2 Flock::GetAverageNeighborPos() const
@@ -186,6 +189,7 @@ Elite::Vector2 Flock::GetAverageNeighborVelocity() const
 		if (m_Neighbors[index] != NULL)
 		{
 			initalVelocity += m_Neighbors[index]->GetLinearVelocity();
+			//m_Neighbors[index]->GetLinearVelocity();
 		}
 	}
 	initalVelocity /= static_cast<float>(m_NrOfNeighbors);
