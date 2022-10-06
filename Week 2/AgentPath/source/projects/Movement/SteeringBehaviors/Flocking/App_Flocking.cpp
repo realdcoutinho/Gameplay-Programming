@@ -32,7 +32,7 @@ void App_Flocking::Update(float deltaTime)
 		auto const mouseData = INPUTMANAGER->GetMouseData(InputType::eMouseButton, InputMouseButton::eLeft);
 		m_MouseTarget.Position = DEBUGRENDERER2D->GetActiveCamera()->ConvertScreenToWorld({ static_cast<float>(mouseData.X), static_cast<float>(mouseData.Y) });
 	}
-
+	//std::cout << m_MouseTarget.Position << '\n';
 	m_pFlock->UpdateAndRenderUI();
 	m_pFlock->Update(deltaTime);
 	if (m_UseMouseTarget)

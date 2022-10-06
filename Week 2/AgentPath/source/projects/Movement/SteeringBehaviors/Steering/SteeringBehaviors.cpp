@@ -20,6 +20,9 @@ SteeringOutput Seek::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 	steering.LinearVelocity.Normalize();
 	steering.LinearVelocity *= pAgent->GetMaxLinearSpeed();
 
+
+	std::cout << m_Target.Position << '\n';
+
 	if (pAgent->CanRenderBehavior())
 	{
 		DEBUGRENDERER2D->DrawDirection(pAgent->GetPosition(), steering.LinearVelocity, 5, { 0, 1, 0 });
@@ -115,43 +118,46 @@ SteeringOutput Arrive::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 	return steering;
 }
 
+//FACE
 SteeringOutput Face::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 {
 	SteeringOutput steering = {};
 
 	Elite::Vector2 targetVector{ m_Target.Position - pAgent->GetPosition() };
-	Elite::Vector2 agentVector{ cosf(pAgent->GetRotation()), sinf(pAgent->GetRotation()) };
+	Elite::Vector2 agentDirection{ cosf(pAgent->GetRotation()), sinf(pAgent->GetRotation()) };
 
 	//different method
-	float angle{ acosf(Elite::Dot(agentVector, targetVector) / (agentVector.Magnitude() * targetVector.Magnitude())) };
-	//Elite::Vector3 targetVectorZ{ m_Target.Position - pAgent->GetPosition() };
-	//Elite::Vector3 agentVectorZ{ pAgent->GetPosition() };
-	//Elite::Vector3 crossZCheck{ Elite::Cross(targetVectorZ, agentVectorZ) };
-	//
-	////if (crossZCheck.z > 0)
-	////	angle = static_cast<float>(2 * M_PI - angle);
+	float angle{ acosf(Elite::Dot(agentDirection, targetVector) / (agentDirection.Magnitude() * targetVector.Magnitude())) };
+	Elite::Vector3 targetVectorZ{ m_Target.Position - pAgent->GetPosition() };
+	Elite::Vector3 agentDirectionZ{ cosf(pAgent->GetRotation()), sinf(pAgent->GetRotation()), 0.0f };
+	Elite::Vector3 crossZCheck{ Elite::Cross(targetVectorZ, agentDirectionZ) };
+	if (crossZCheck.z < 0)
+		angle = -angle;
+	float haltAngle{ static_cast<float>(Elite::ToRadians(0.005f)) };
 
-	//float angle{ AngleBetween(targetVector, agentVector) };
 
-	constexpr float stopAngle{ Elite::ToRadians(0.01f) };
-	constexpr float slowAngle{ Elite::ToRadians(50.0f) };
 
 	pAgent->SetAutoOrient(false);
-	if (stopAngle < angle)
+	if (haltAngle <= angle)
+	{
 		steering.AngularVelocity = -pAgent->GetMaxAngularSpeed();
-	else if (angle < stopAngle)
+	}
+	else if (angle <= haltAngle)
+	{
 		steering.AngularVelocity = pAgent->GetMaxAngularSpeed();
-	if (-slowAngle < angle && angle < slowAngle)
-		steering.AngularVelocity *= angle / slowAngle;
-	if (-stopAngle < angle && angle < stopAngle)
+	}
+	if (-haltAngle <= angle && angle <= haltAngle)
+	{
 		steering.AngularVelocity = 0;
+	}
+	steering.AngularVelocity *= abs(angle);
 
 
 
 	if (pAgent->CanRenderBehavior())
 	{
 		DEBUGRENDERER2D->DrawDirection(pAgent->GetPosition(), targetVector, 5, { 0, 1.0f, 0 });
-		DEBUGRENDERER2D->DrawDirection(pAgent->GetPosition(), agentVector, 5, { 0, 0, 1.0f });
+		DEBUGRENDERER2D->DrawDirection(pAgent->GetPosition(), agentDirection, 5, { 0, 0, 1.0f });
 	}
 	return steering;
 }

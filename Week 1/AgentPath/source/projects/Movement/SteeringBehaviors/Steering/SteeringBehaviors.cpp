@@ -121,7 +121,6 @@ SteeringOutput Arrive::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 }
 
 //FACE
-//NOT MY CODE. COULDNT FIGURE IT OUT!
 SteeringOutput Face::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 {
 	SteeringOutput steering = {};
@@ -132,31 +131,28 @@ SteeringOutput Face::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 	//different method
 	float angle{ acosf(Elite::Dot(agentDirection, targetVector) / (agentDirection.Magnitude() * targetVector.Magnitude())) };
 	Elite::Vector3 targetVectorZ{ m_Target.Position - pAgent->GetPosition() };
-	Elite::Vector3 agentVectorZ{ cosf(pAgent->GetRotation()), sinf(pAgent->GetRotation()), 0.0f };
-	Elite::Vector3 crossZCheck{ Elite::Cross(targetVectorZ, agentVectorZ) };
-	
-
-	//std::cout << ToDegrees(angle) << '\n';
+	Elite::Vector3 agentDirectionZ{ cosf(pAgent->GetRotation()), sinf(pAgent->GetRotation()), 0.0f };
+	Elite::Vector3 crossZCheck{ Elite::Cross(targetVectorZ, agentDirectionZ) };
 	if (crossZCheck.z < 0)
 		angle = -angle;
-
-	//float angle{ AngleBetween(targetVector, agentDirection) };
-
-	std::cout << ToDegrees(angle) << '\n';
+	float haltAngle{ static_cast<float>(Elite::ToRadians(0.005f)) };
 
 
-	constexpr float stopAngle{ Elite::ToRadians(0.01f) };
-	constexpr float slowAngle{ Elite::ToRadians(50.0f) };
 
 	pAgent->SetAutoOrient(false);
-	if (stopAngle < angle)
-		steering.AngularVelocity = -pAgent->GetMaxAngularSpeed()/10;
-	else if (angle < stopAngle)
-		steering.AngularVelocity = pAgent->GetMaxAngularSpeed()/10;
-	if (-slowAngle < angle && angle < slowAngle)
-		steering.AngularVelocity *= angle / slowAngle;
-	if (-stopAngle < angle && angle < stopAngle)
+	if (haltAngle <= angle)
+	{
+		steering.AngularVelocity = -pAgent->GetMaxAngularSpeed();
+	}
+	else if (angle <= haltAngle)
+	{
+		steering.AngularVelocity = pAgent->GetMaxAngularSpeed();
+	}
+	if (-haltAngle <= angle && angle <= haltAngle)
+	{
 		steering.AngularVelocity = 0;
+	}
+	steering.AngularVelocity *= abs(angle);
 
 
 

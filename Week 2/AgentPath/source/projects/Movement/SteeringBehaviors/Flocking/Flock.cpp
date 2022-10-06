@@ -21,17 +21,42 @@ Flock::Flock(
 	, m_NeighborhoodRadius{ 15 }
 	, m_NrOfNeighbors{0}
 {
-	m_Agents.resize(m_FlockSize);
 
 	// TODO: initialize the flock and the memory pool
+	m_pSeekBehavior = new Seek();
+	m_pWanderBehavior = new Wander();
+	m_pCohesionBehavior = new Cohesion(this);
+	m_pSeparationBehavior = new Separation(this);
+
+
+	m_Agents.resize(m_FlockSize);
+	m_Neighbors.resize(m_FlockSize);
+	for (int i{}; i < flockSize; ++i)
+	{
+		m_Agents[i] = new SteeringAgent();
+		m_Agents[i]->SetSteeringBehavior(m_pCohesionBehavior);
+		m_Agents[i]->SetPosition(Elite::Vector2(randomFloat(0, m_WorldSize), randomFloat(0, m_WorldSize)));
+		m_Agents[i]->SetMaxLinearSpeed(15.0f);
+		m_Agents[i]->SetAutoOrient(true);
+		////pAgent->SetBodyColor({ 1, 0, 0, 0 });
+		m_Agents[i]->SetMass(0.3f);
+	}
 }
 
 Flock::~Flock()
 {
 	// TODO: clean up any additional data
+	SAFE_DELETE(m_pSeekBehavior);
+	SAFE_DELETE(m_pWanderBehavior);
+	SAFE_DELETE(m_pCohesionBehavior);
+	SAFE_DELETE(m_pSeparationBehavior);
+
 
 	SAFE_DELETE(m_pBlendedSteering);
 	SAFE_DELETE(m_pPrioritySteering);
+	
+
+
 
 	for(auto pAgent: m_Agents)
 	{
@@ -45,14 +70,29 @@ void Flock::Update(float deltaT)
 	// TODO: update the flock
 	// loop over all the agents
 		// register its neighbors	(-> memory pool is filled with neighbors of the currently evaluated agent)
+	for (size_t index{}; index < m_Agents.size(); ++index)
+	{
+		RegisterNeighbors(m_Agents[index]);
+		m_Agents[index]->Update(deltaT);
+		if (m_TrimWorld)
+		{
+			// Trim the agent to the world
+			m_Agents[index]->TrimToWorld(m_WorldSize);
+		}
+	}
 		// update it				(-> the behaviors can use the neighbors stored in the pool, next iteration they will be the next agent's neighbors)
-		// trim it to the world
+
 }
 
 void Flock::Render(float deltaT)
 {
-	// TODO: render the flock
+	for (size_t index{}; index < m_Agents.size(); ++index)
+	{
+		m_Agents[index]->Render(deltaT);
+		m_Agents[index]->SetRenderBehavior(true);
+	}
 }
+
 
 void Flock::UpdateAndRenderUI()
 {
@@ -103,25 +143,60 @@ void Flock::UpdateAndRenderUI()
 void Flock::RegisterNeighbors(SteeringAgent* pAgent)
 {
 	// TODO: Implement
+	Elite::Vector2 neighborhoodCenter{ pAgent->GetPosition() + pAgent->GetPosition() * m_NeighborhoodRadius };
+	
+	size_t nrOfAgents{ m_Agents.size() };
+
+	m_NrOfNeighbors = 0;
+
+	for (size_t index{}; index < nrOfAgents; ++index)
+	{
+		if (IsPointInCircle(m_Agents[index]->GetPosition(), neighborhoodCenter, m_NeighborhoodRadius))
+			m_Neighbors[m_NrOfNeighbors] = m_Agents[index];
+			
+		++m_NrOfNeighbors;
+	}
+	std::cout << m_NrOfNeighbors << '\n';
 }
 
 Elite::Vector2 Flock::GetAverageNeighborPos() const
 {
 	// TODO: Implement
+	Elite::Vector2 initalVector{};
+	
+	for (int index{}; index < m_NrOfNeighbors; ++index)
+	{
+		if (m_Neighbors[index] != NULL)
+		{
+			initalVector += m_Neighbors[index]->GetPosition();
+		}
+	}
+	initalVector /= static_cast<float>(m_NrOfNeighbors);
 
-	return Vector2{};
+	return initalVector;
 }
 
 Elite::Vector2 Flock::GetAverageNeighborVelocity() const
 {
 	// TODO: Implement
+	Elite::Vector2 initalVelocity{};
 
-	return Vector2{};
+	for (int index{}; index < m_NrOfNeighbors; ++index)
+	{
+		if (m_Neighbors[index] != NULL)
+		{
+			initalVelocity += m_Neighbors[index]->GetLinearVelocity();
+		}
+	}
+	initalVelocity /= static_cast<float>(m_NrOfNeighbors);
+
+	return initalVelocity;
 }
 
 void Flock::SetTarget_Seek(TargetData target)
 {
 	// TODO: Set target for seek behavior
+	m_pSeekBehavior->SetTarget(target);
 }
 
 

@@ -35,7 +35,7 @@ void App_CombinedSteering::Start()
 	m_pDrunkAgent->SetSteeringBehavior(m_pBlendedSteering);
 	m_pDrunkAgent->SetMaxLinearSpeed(15.0f);
 	m_pDrunkAgent->SetAutoOrient(true);
-	m_pDrunkAgent->SetBodyColor({ 1, 0, 0 });
+	m_pDrunkAgent->SetBodyColor({ 1, 0, 1 });
 	m_pDrunkAgent->SetMass(0.3f);
 
 	m_pSoberWander = new Wander();
@@ -147,6 +147,12 @@ void App_CombinedSteering::Render(float deltaTime) const
 {
 	m_pDrunkAgent->Render(deltaTime);
 	m_pDrunkAgent->SetRenderBehavior(m_CanDebugRender);
+
+
+	m_pEvadingAgent->Render(deltaTime);
+	m_pEvadingAgent->SetRenderBehavior(m_CanDebugRender);
+
+
 
 	if (m_TrimWorld)
 	{

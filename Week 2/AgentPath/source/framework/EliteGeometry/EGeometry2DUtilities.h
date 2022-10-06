@@ -184,5 +184,19 @@ namespace Elite
 
 		return false;
 	}
+	
+	inline bool IsPointInCircle(Vector2 point, Vector2 center, float radius)
+	{
+		float maxX{ center.x + radius};
+		float minX{ center.x - radius };
+		float maxY{ center.y + radius };
+		float minY{ center.y - radius };
+
+		if (point.x >= minX && point.x <= maxX)
+			if (point.y >= minY && point.y <= maxY)
+				return true;
+		
+		return false;
+	}
 }
 #endif
