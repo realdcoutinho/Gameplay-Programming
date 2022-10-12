@@ -18,6 +18,9 @@ public:
 	Elite::Vector2 GetPosition() const { return m_pRigidBody->GetPosition(); }
 	void SetPosition(const Elite::Vector2& pos) const { m_pRigidBody->SetPosition(pos); }
 
+	Elite::Vector2 GetOldPosition() const { return m_OldPosition; }
+	void SetOldPosition(const Elite::Vector2& pos) { m_OldPosition =  pos; }
+
 	float GetRotation() const {
 		return Elite::ClampedAngle(m_pRigidBody->GetRotation().x);}
 	void SetRotation(float rot) const { m_pRigidBody->SetRotation({ rot, 0.0f }); } 
@@ -43,6 +46,8 @@ protected:
 	RigidBody* m_pRigidBody = nullptr;
 	float m_Radius = 1.f;
 	Elite::Color m_BodyColor = { 1,1,0,1 };
+
+	Elite::Vector2 m_OldPosition{};
 
 private:
 

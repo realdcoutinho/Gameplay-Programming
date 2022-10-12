@@ -54,54 +54,22 @@ void CellSpace::AddAgent(SteeringAgent* agent)
 
 void CellSpace::UpdateAgentCell(SteeringAgent* agent, Elite::Vector2 oldPos)
 {
-
-		if (m_Cells[0].agents.size() > 0)
-		{
-			for (SteeringAgent* agents : m_Cells[0].agents)
-			{
-				//agents->SetBodyColor({ 1, 1, 1 });
-				//std::cout << m_Cells[0].agents.size() << '\n';
-				//std::cout << agents->GetPosition() << '\n';
-				if (Elite::IsPointInRect(agents->GetPosition(), m_Cells[0].GetRectPoints()))
-				{
-
-				}
-			}
-		}
+	int indexCurrent = PositionToIndex(agent->GetPosition());
+	int indexOld = PositionToIndex(oldPos);
 
 
 
-	//for (int index{}; index < m_NrOfCells; ++index)
-	//{
-	//
-	//	if (m_Cells[index].agents.size() > 0)
-	//	{
-	//		for (SteeringAgent* agents : m_Cells[index].agents)
-	//		{
-	//			std::cout << m_Cells[index].agents.size() << '\n';
-	//			std::cout << agents->GetPosition() << '\n';
-	//			if (Elite::IsPointInRect(agents->GetPosition(), m_Cells[index].GetRectPoints()))
-	//			{
-	//
-	//			}
-	//		}
-	//	}
-	//}
+	if (indexCurrent = indexOld)
+	{
+		return;
+	}
+	if (indexCurrent != indexOld)
+	{
+		m_Cells[indexOld].agents.remove(agent);
+		m_Cells[indexCurrent].agents.push_back(agent);
+		//m_Cells[indexCurrent].agents.push_back(agent);
+	}
 
-
-
-
-	//	//for (SteeringAgent* agents : m_Cells[index].agents) 
-	//	//{
-	//	//	if (Elite::IsPointInRect(agents->GetPosition(), m_Cells[index].GetRectPoints()))
-	//	//	{
-	//	//	}
-	//	//	else
-	//	//	{
-	//	//		
-	//	//	}
-	//	//}
-	//}
 }
 
 void CellSpace::RegisterNeighbors(SteeringAgent* agent, float queryRadius)
@@ -135,6 +103,17 @@ void CellSpace::RenderCells() const
 
 int CellSpace::PositionToIndex(const Elite::Vector2 pos) const
 {
+	//int widthIndex{ static_cast<int>(pos.x / m_CellWidth ) };
+	//int heightIndex{ static_cast<int>(pos.y / m_CellHeight) };
+
+	//int index{ heightIndex * (m_NrOfCols) + widthIndex};
+	//if (index > 100)
+	//{
+	//	//simply to test bugs
+	//	return 0;
+	//}
+	//return index;
+
 	for (int index{}; index < m_NrOfCells; ++index)
 	{
 		if (Elite::IsPointInRect(pos, m_Cells[index].GetRectPoints()))
@@ -147,10 +126,9 @@ int CellSpace::PositionToIndex(const Elite::Vector2 pos) const
 
 void CellSpace::InitializeCells()
 {
-	m_CellWidth = m_SpaceWidth / m_NrOfCols;
-	m_CellHeight = m_SpaceHeight / m_NrOfRows;
-	m_NrOfCells = m_NrOfCols * m_NrOfRows;
-	//m_NrOfNeighbors = m_Cells
+	m_CellWidth = m_SpaceWidth / m_NrOfCols; //width
+	m_CellHeight = m_SpaceHeight / m_NrOfRows; //height
+	m_NrOfCells = m_NrOfCols * m_NrOfRows; //equal to area
 
 	for (int rows{}; rows < m_NrOfRows; ++rows)
 	{

@@ -58,6 +58,9 @@ void Flock::Update(float deltaT)
 {
 	// TODO: update the flock
 	// loop over all the agents
+
+	//std::cout << m_Agents[0]->GetPosition() << '\n';
+
 	for (size_t index{}; index < m_Agents.size(); ++index)
 	{
 		// register its neighbors	(-> memory pool is filled with neighbors of the currently evaluated agent)
@@ -85,15 +88,25 @@ void Flock::Update(float deltaT)
 
 	m_DebugAgentWorldPosition = m_Agents[m_DebugAgentIndexPosition]->GetPosition(); //Updates the position of the agent debugger so that multiple function dont have to. 
 
+	std::cout << "OLD: " << m_Agents[0]->GetOldPosition() << '\n';
+	std::cout << "NEW: " << m_Agents[0]->GetPosition() << '\n';
 	for (auto pAgent : m_Agents)
 	{
-		m_CellSpace->UpdateAgentCell(pAgent, {0,0});
+
 	}
 
-	//for (int index{}; index < m_FlockSize; ++index)
-	//{
-	//	m_CellSpace->UpdateAgentCell(m_Agents[index], {0,0});
-	//}
+
+
+	for (int index{}; index < m_FlockSize; ++index)
+	{
+		m_CellSpace->UpdateAgentCell(m_Agents[index], m_Agents[index]->GetOldPosition());
+		m_Agents[index]->SetOldPosition(m_Agents[index]->GetPosition());
+	}
+
+	for (auto pAgent : m_Agents)
+	{
+		
+	}
 
 
 }
@@ -156,7 +169,7 @@ void Flock::UpdateAndRenderUI()
 	ImGui::SliderFloat("Seperation", &m_pBlendedSteering->GetWeightedBehaviorsRef()[1].weight, 0.f, 1.f, "%.2");
 	ImGui::SliderFloat("Seek", &m_pBlendedSteering->GetWeightedBehaviorsRef()[2].weight, 0.f, 1.f, "%.2");
 	ImGui::SliderFloat("Wander", &m_pBlendedSteering->GetWeightedBehaviorsRef()[3].weight, 0.f, 1.f, "%.2");
-	ImGui::SliderFloat("VelocityMatch", &m_pBlendedSteering->GetWeightedBehaviorsRef()[4].weight, 0.f, 1.f, "%.2");
+	ImGui::SliderFloat("VelocityMatch", &m_pBlendedSteering->GetWeightedBehaviorsRef()[4].weight, 0.f, 0.0f, "%.2");
 
 	//End
 	ImGui::PopAllowKeyboardFocus();
@@ -259,7 +272,7 @@ void Flock::InitializeFlock()
 		{m_pSeparationBehavior, 0.3f},
 		{m_pSeekBehavior, 0.05f},
 		{m_pWanderBehavior, 0.7f}, 
-		{m_pVelMatchBehavior, 0.5f}
+		{m_pVelMatchBehavior, 0.01f}
 		}); 
 	m_pPrioritySteering = new PrioritySteering({ 
 		m_pEvadeBehavior, 
@@ -271,6 +284,7 @@ void Flock::InitializeFlock()
 		m_Agents[i] = new SteeringAgent();
 		m_Agents[i]->SetSteeringBehavior(m_pPrioritySteering);
 		m_Agents[i]->SetPosition(Elite::Vector2(randomFloat(0, m_WorldSize), randomFloat(0, m_WorldSize)));
+		m_Agents[i]->SetOldPosition(m_Agents[i]->GetPosition());
 		m_Agents[i]->SetMaxLinearSpeed(m_MaxAgentVelocity);
 		m_Agents[i]->SetAutoOrient(true);
 		m_Agents[i]->SetMass(0.3f);
