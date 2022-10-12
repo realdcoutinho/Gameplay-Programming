@@ -59,9 +59,9 @@ void CellSpace::UpdateAgentCell(SteeringAgent* agent, Elite::Vector2 oldPos)
 		{
 			for (SteeringAgent* agents : m_Cells[0].agents)
 			{
-				agents->SetBodyColor({ 1, 1, 1 });
-				std::cout << m_Cells[0].agents.size() << '\n';
-				std::cout << agents->GetPosition() << '\n';
+				//agents->SetBodyColor({ 1, 1, 1 });
+				//std::cout << m_Cells[0].agents.size() << '\n';
+				//std::cout << agents->GetPosition() << '\n';
 				if (Elite::IsPointInRect(agents->GetPosition(), m_Cells[0].GetRectPoints()))
 				{
 
