@@ -59,15 +59,10 @@ void CellSpace::UpdateAgentCell(SteeringAgent* agent, Elite::Vector2 oldPos)
 
 
 
-	if (indexCurrent = indexOld)
-	{
-		return;
-	}
 	if (indexCurrent != indexOld)
 	{
 		m_Cells[indexOld].agents.remove(agent);
 		m_Cells[indexCurrent].agents.push_back(agent);
-		//m_Cells[indexCurrent].agents.push_back(agent);
 	}
 
 }
@@ -103,25 +98,14 @@ void CellSpace::RenderCells() const
 
 int CellSpace::PositionToIndex(const Elite::Vector2 pos) const
 {
-	//int widthIndex{ static_cast<int>(pos.x / m_CellWidth ) };
-	//int heightIndex{ static_cast<int>(pos.y / m_CellHeight) };
+	int widthIndex{ static_cast<int>(pos.x / m_CellWidth ) };
+	int heightIndex{ static_cast<int>(pos.y / m_CellHeight) };
 
-	//int index{ heightIndex * (m_NrOfCols) + widthIndex};
-	//if (index > 100)
-	//{
-	//	//simply to test bugs
-	//	return 0;
-	//}
-	//return index;
+	widthIndex = Elite::Clamp(widthIndex, 0, m_NrOfCols - 1);
+	heightIndex = Elite::Clamp(heightIndex, 0, m_NrOfRows - 1);
+	int index{ heightIndex * (m_NrOfCols) + widthIndex};
 
-	for (int index{}; index < m_NrOfCells; ++index)
-	{
-		if (Elite::IsPointInRect(pos, m_Cells[index].GetRectPoints()))
-		{
-			return index;
-		}
-	}
-	return NULL;
+	return index;
 }
 
 void CellSpace::InitializeCells()

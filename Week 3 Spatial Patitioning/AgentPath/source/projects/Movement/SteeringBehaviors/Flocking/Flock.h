@@ -76,7 +76,7 @@ private:
 
 	int m_DebugAgentIndexPosition{};
 	float m_MaxAgentVelocity{ 60.0f };
-	float m_MaxEvadeAgentVelocity{ 0.0f };
+	float m_MaxEvadeAgentVelocity{ 40.0f };
 	float m_EvadeAgentRadius{ 20.0f };
 
 	int m_NrOfColumsPartition{ 25 };
