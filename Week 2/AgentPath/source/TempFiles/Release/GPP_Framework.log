@@ -1,7 +1,0 @@
-﻿  Generating code
-  Previous IPDB not found, fall back to full compilation.
-  All 1618 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
-  Finished generating code
-  GPP_Framework.vcxproj -> C:\Users\diogo\Documents\GitHub\Gameplay Programming\Week 2\AgentPath\bin\Release\GPP_Framework.exe
-  C:\Users\diogo\Documents\GitHub\Gameplay Programming\Week 2\AgentPath\source\..\lib\SDL2.dll
-  1 File(s) copied
