@@ -17,11 +17,11 @@ Flock::Flock(
 	SteeringAgent* pAgentToEvade /*= nullptr*/, 
 	bool trimWorld /*= false*/)
 
-	: m_WorldSize{ worldSize }
-	, m_FlockSize{ flockSize }
+	: m_WorldSize{ 1000 }
+	, m_FlockSize{ 4000 }
 	, m_TrimWorld { trimWorld }
 	, m_pAgentToEvade{pAgentToEvade}
-	, m_NeighborhoodRadius{ 15 }
+	, m_NeighborhoodRadius{ 5 }
 	, m_NrOfNeighbors{0}
 {
 	// TODO: initialize the flock and the memory pool
@@ -29,7 +29,7 @@ Flock::Flock(
 	InitializeEvadingAgent();
 	InitializeCellSpace();
 
-
+	
 }
 
 Flock::~Flock()
@@ -45,6 +45,7 @@ Flock::~Flock()
 	SAFE_DELETE(m_pPrioritySteering);
 
 	SAFE_DELETE(m_pAgentToEvade);
+	m_CellSpace->EmptyCells();
 	SAFE_DELETE(m_CellSpace);
 
 	for (auto pAgent : m_Agents)
@@ -88,34 +89,21 @@ void Flock::Update(float deltaT)
 
 	m_DebugAgentWorldPosition = m_Agents[m_DebugAgentIndexPosition]->GetPosition(); //Updates the position of the agent debugger so that multiple function dont have to. 
 
-	std::cout << "OLD: " << m_Agents[0]->GetOldPosition() << '\n';
-	std::cout << "NEW: " << m_Agents[0]->GetPosition() << '\n';
-	for (auto pAgent : m_Agents)
-	{
-
-	}
-
-
-
 	for (int index{}; index < m_FlockSize; ++index)
 	{
 		m_CellSpace->UpdateAgentCell(m_Agents[index], m_Agents[index]->GetOldPosition());
 		m_Agents[index]->SetOldPosition(m_Agents[index]->GetPosition());
-	}
-
-	for (auto pAgent : m_Agents)
-	{
 		
 	}
-
 
 }
 
 void Flock::Render(float deltaT)
 {
-	DebugRenderNeighborhoodAndSteering(deltaT);
+	//DebugRenderNeighborhoodAndSteering(deltaT);
 	DebugEvadeAgent(deltaT);
-	m_CellSpace->RenderCells();
+	//m_CellSpace->RenderCells();
+	//m_Agents[10]->SetBodyColor({ 1,1,1 });
 }
 
 void Flock::UpdateAndRenderUI()
@@ -179,19 +167,25 @@ void Flock::UpdateAndRenderUI()
 
 void Flock::RegisterNeighbors(SteeringAgent* pAgent)
 {
-	// TODO: Implement
 	m_NrOfNeighbors = 0;
-	for (int index{}; index < m_FlockSize; ++index)
-	{
-		if (pAgent != m_Agents[index])
-		{
-			if (IsPointInCircle(m_Agents[index]->GetPosition(), pAgent->GetPosition(), m_NeighborhoodRadius))
-			{
-				m_Neighbors[m_NrOfNeighbors] = m_Agents[index];
-				++m_NrOfNeighbors;
-			}
-		}
-	}
+	//m_CellSpace->RegisterNeighbors(m_Agents[10], m_NeighborhoodRadius);
+
+	//if (pAgent != NULL)
+	//{
+	//	m_CellSpace->RegisterNeighbors(pAgent, m_NeighborhoodRadius);
+	//}
+
+	//for (int index{}; index < m_FlockSize; ++index)
+	//{
+	//	if (pAgent != m_Agents[index])
+	//	{
+	//		if (IsPointInCircle(m_Agents[index]->GetPosition(), pAgent->GetPosition(), m_NeighborhoodRadius))
+	//		{
+	//			m_Neighbors[m_NrOfNeighbors] = m_Agents[index];
+	//			++m_NrOfNeighbors;
+	//		}
+	//	}
+	//}
 }
 
 Elite::Vector2 Flock::GetAverageNeighborPos() const
@@ -368,9 +362,11 @@ void Flock::DebugEvadeAgent(float deltaT)
 
 void Flock::InitializeCellSpace()
 {
-	m_CellSpace = new CellSpace(m_WorldSize, m_WorldSize, 10, 10, 10);
-	//m_CellSpace = new CellSpace(m_WorldSize, m_WorldSize, m_NrOfRowsPartition, m_NrOfColumsPartition, 10);
-	
+	//m_CellSpace = new CellSpace(m_WorldSize, m_WorldSize, 10, 10, 10);
+	//m_CellSpace = new CellSpace(m_WorldSize, m_WorldSize, 20, 20, 10);
+	m_CellSpace = new CellSpace(m_WorldSize, m_WorldSize, m_NrOfRowsPartition, m_NrOfColumsPartition, 10);
+
+
 	for (int index{}; index < m_FlockSize; ++index)
 	{
 		m_CellSpace->AddAgent(m_Agents[index]);

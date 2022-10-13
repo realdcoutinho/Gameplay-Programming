@@ -44,7 +44,7 @@ private:
 	bool m_TrimWorld = false;
 	float m_WorldSize = 0.f;
 
-	float m_NeighborhoodRadius = 50.f;
+	float m_NeighborhoodRadius = 5.f;
 	int m_NrOfNeighbors = 0;
 
 	SteeringAgent* m_pAgentToEvade = nullptr;

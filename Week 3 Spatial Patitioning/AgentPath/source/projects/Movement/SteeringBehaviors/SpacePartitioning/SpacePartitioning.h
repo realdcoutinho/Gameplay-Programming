@@ -78,6 +78,9 @@ private:
 
 	//my functions
 	void InitializeCells();
+	int GetColumnIndex(const float xPosition) const;
+	int GetRowIndex(const float yPosition) const;
+
 
 
 };

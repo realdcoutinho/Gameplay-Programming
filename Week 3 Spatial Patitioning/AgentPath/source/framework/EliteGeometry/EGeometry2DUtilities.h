@@ -200,5 +200,24 @@ namespace Elite
 			point.y <= rect[1].y);
 	}
 
+	inline bool IsOverlapping(const std::vector<Elite::Vector2> rect, const Vector2& center, const float radius)
+	{
+		// Is center of circle in the rectangle?
+		if (IsPointInRect(center, rect))
+			return true;
+
+		// Check line segments
+		if (Distance(center, rect[0]) <= radius)
+			return true;
+		if (Distance(center, rect[1]) <= radius)
+			return true;
+		if (Distance(center, rect[2]) <= radius)
+			return true;		
+		if (Distance(center, rect[3]) <= radius)
+			return true;
+
+		return false;
+	}
+
 }
 #endif

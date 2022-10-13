@@ -57,19 +57,76 @@ void CellSpace::UpdateAgentCell(SteeringAgent* agent, Elite::Vector2 oldPos)
 	int indexCurrent = PositionToIndex(agent->GetPosition());
 	int indexOld = PositionToIndex(oldPos);
 
-
-
 	if (indexCurrent != indexOld)
 	{
 		m_Cells[indexOld].agents.remove(agent);
 		m_Cells[indexCurrent].agents.push_back(agent);
 	}
-
+	
 }
 
 void CellSpace::RegisterNeighbors(SteeringAgent* agent, float queryRadius)
 {
-	
+	Elite::Vector2 position{ agent->GetPosition() };
+
+
+	//DEBUGRENDERER2D->DrawCircle(position, queryRadius, { 0, 1, 0 }, 0);
+
+	std::vector<Elite::Vector2> rectPoints =
+	{
+		{ position.x - queryRadius , position.y - queryRadius  }, //bomttomLeft //0
+		{ position.x - queryRadius ,  position.y + queryRadius  }, //topLeft //1
+		{ position.x + queryRadius ,  position.y + queryRadius }, //topRight //2
+		{ position.x + queryRadius ,  position.y - queryRadius  }, //bottomRight //3
+	};
+
+	//DEBUGRENDERER2D->DrawSegment(rectPoints[0], rectPoints[1], { 0.0f, 1.0f, 0.0f });
+	//DEBUGRENDERER2D->DrawSegment(rectPoints[1], rectPoints[2], { 0.0f, 1.0f, 0.0f });
+	//DEBUGRENDERER2D->DrawSegment(rectPoints[2], rectPoints[3], { 0.0f, 1.0f, 0.0f });
+	//DEBUGRENDERER2D->DrawSegment(rectPoints[0], rectPoints[3], { 0.0f, 1.0f, 0.0f });
+
+	int minColumn{ GetColumnIndex(rectPoints[0].x) };
+	int maxColumn{ GetColumnIndex(rectPoints[2].x) };
+
+	int minRow{ GetRowIndex(rectPoints[0].y) };
+	int maxRow{ GetRowIndex(rectPoints[2].y) };
+
+
+	for (int indexRow{ minRow }; indexRow <= maxRow; ++indexRow)
+	{
+		for (int indexColumn{ minColumn }; indexColumn <= maxColumn; ++indexColumn)
+		{
+			int index{ indexRow * (m_NrOfRows)+indexColumn };
+			if (Elite::IsOverlapping(m_Cells[index].GetRectPoints(), position, queryRadius))
+			{
+				const std::vector<Elite::Vector2> rect = m_Cells[index].GetRectPoints();
+				//DEBUGRENDERER2D->DrawSegment(rect[0], rect[1], { 0.0f, 0.0f, 1.0f });
+				//DEBUGRENDERER2D->DrawSegment(rect[1], rect[2], { 0.0f, 0.0f, 1.0f });
+				//DEBUGRENDERER2D->DrawSegment(rect[2], rect[3], { 0.0f, 0.0f, 1.0f });
+				//DEBUGRENDERER2D->DrawSegment(rect[0], rect[3], { 0.0f, 0.0f, 1.0f });
+
+
+				int size{ static_cast<int>(m_Cells[index].agents.size()) };
+				for (int agentIndex{}; agentIndex < size; ++agentIndex)
+				{
+					if (Elite::IsPointInCircle(agent->GetPosition(), position, queryRadius))
+					{
+						//m_Neighbors[m_NrOfNeighbors] = agent;
+						//++m_NrOfNeighbors;
+					}
+				}
+
+				//for (SteeringAgent* agent : m_Cells[index].agents)
+				//{
+				//	if (Elite::IsPointInCircle(agent->GetPosition(), position, queryRadius))
+				//	{
+				//		m_Neighbors[m_NrOfNeighbors] = agent;
+				//		++m_NrOfNeighbors;
+				//	}
+				//}
+			}
+		}
+	}
 }
 
 void CellSpace::EmptyCells()
@@ -98,14 +155,26 @@ void CellSpace::RenderCells() const
 
 int CellSpace::PositionToIndex(const Elite::Vector2 pos) const
 {
-	int widthIndex{ static_cast<int>(pos.x / m_CellWidth ) };
-	int heightIndex{ static_cast<int>(pos.y / m_CellHeight) };
+	int widthIndex{ GetColumnIndex(pos.x) };
+	int heightIndex{ GetRowIndex(pos.y) };
 
-	widthIndex = Elite::Clamp(widthIndex, 0, m_NrOfCols - 1);
-	heightIndex = Elite::Clamp(heightIndex, 0, m_NrOfRows - 1);
 	int index{ heightIndex * (m_NrOfCols) + widthIndex};
-
 	return index;
+}
+
+int CellSpace::GetColumnIndex(const float xPosition) const
+{
+	int widthIndex{ static_cast<int>(xPosition / m_CellWidth) };
+	widthIndex = Elite::Clamp(widthIndex, 0, m_NrOfCols - 1);
+	return widthIndex;
+}
+
+
+int CellSpace::GetRowIndex(const float yPosition) const
+{
+	int heightIndex{ static_cast<int>(yPosition / m_CellHeight) };
+	heightIndex = Elite::Clamp(heightIndex, 0, m_NrOfRows - 1);
+	return heightIndex;
 }
 
 void CellSpace::InitializeCells()
