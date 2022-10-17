@@ -111,8 +111,8 @@ void CellSpace::RegisterNeighbors(SteeringAgent* agent, float queryRadius)
 				{
 					if (Elite::IsPointInCircle(agent->GetPosition(), position, queryRadius))
 					{
-						//m_Neighbors[m_NrOfNeighbors] = agent;
-						//++m_NrOfNeighbors;
+						m_Neighbors[m_NrOfNeighbors] = agent;
+						++m_NrOfNeighbors;
 					}
 				}
 

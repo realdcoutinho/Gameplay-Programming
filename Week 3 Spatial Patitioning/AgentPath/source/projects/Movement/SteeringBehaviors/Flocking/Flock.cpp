@@ -45,7 +45,7 @@ Flock::~Flock()
 	SAFE_DELETE(m_pPrioritySteering);
 
 	SAFE_DELETE(m_pAgentToEvade);
-	m_CellSpace->EmptyCells();
+	//m_CellSpace->EmptyCells();
 	SAFE_DELETE(m_CellSpace);
 
 	for (auto pAgent : m_Agents)
@@ -70,8 +70,13 @@ void Flock::Update(float deltaT)
 		m_Agents[index]->Update(deltaT); //(->the behaviors can use the neighbors stored in the pool, next iteration they will be the next agent's neighbors)
 		if (m_TrimWorld)
 		{
-			// Trim the agent to the world
-			m_Agents[index]->TrimToWorld(m_WorldSize);
+			if (m_Agents[index] != NULL)
+			{
+				// Trim the agent to the world
+				m_Agents[index]->TrimToWorld(m_WorldSize);
+				m_CellSpace->UpdateAgentCell(m_Agents[index], m_Agents[index]->GetOldPosition());
+				m_Agents[index]->SetOldPosition(m_Agents[index]->GetPosition());
+			}
 		}
 	}
 
@@ -80,22 +85,10 @@ void Flock::Update(float deltaT)
 		m_pAgentToEvade->Update(deltaT); //updates it
 		m_pAgentToEvade->TrimToWorld(m_WorldSize); //trims to worls (same as for all other agents)
 
-		//TargetData evadeTarget{};
-		//evadeTarget.Position = m_pAgentToEvade->GetPosition(); //sets as the new target position the m_pAgentToEvade's position
-		//evadeTarget.LinearVelocity = m_pAgentToEvade->GetLinearVelocity(); //can be used when actually using evade
-		//evadeTarget.AngularVelocity = m_pAgentToEvade->GetAngularVelocity(); //can be used when actually using evade
 		m_pEvadeBehavior->SetTarget(m_pAgentToEvade->GetPosition()); //passes the evadeTarget to the setTarget fucntion
 	}
 
 	m_DebugAgentWorldPosition = m_Agents[m_DebugAgentIndexPosition]->GetPosition(); //Updates the position of the agent debugger so that multiple function dont have to. 
-
-	for (int index{}; index < m_FlockSize; ++index)
-	{
-		m_CellSpace->UpdateAgentCell(m_Agents[index], m_Agents[index]->GetOldPosition());
-		m_Agents[index]->SetOldPosition(m_Agents[index]->GetPosition());
-		
-	}
-
 }
 
 void Flock::Render(float deltaT)
@@ -170,10 +163,10 @@ void Flock::RegisterNeighbors(SteeringAgent* pAgent)
 	m_NrOfNeighbors = 0;
 	//m_CellSpace->RegisterNeighbors(m_Agents[10], m_NeighborhoodRadius);
 
-	//if (pAgent != NULL)
-	//{
-	//	m_CellSpace->RegisterNeighbors(pAgent, m_NeighborhoodRadius);
-	//}
+	if (pAgent != NULL)
+	{
+		m_CellSpace->RegisterNeighbors(pAgent, m_NeighborhoodRadius);
+	}
 
 	//for (int index{}; index < m_FlockSize; ++index)
 	//{
@@ -362,8 +355,6 @@ void Flock::DebugEvadeAgent(float deltaT)
 
 void Flock::InitializeCellSpace()
 {
-	//m_CellSpace = new CellSpace(m_WorldSize, m_WorldSize, 10, 10, 10);
-	//m_CellSpace = new CellSpace(m_WorldSize, m_WorldSize, 20, 20, 10);
 	m_CellSpace = new CellSpace(m_WorldSize, m_WorldSize, m_NrOfRowsPartition, m_NrOfColumsPartition, 10);
 
 
