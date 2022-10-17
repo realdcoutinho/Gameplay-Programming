@@ -11,7 +11,9 @@ public:
 	virtual void Render(float dt);
 
 	//Functions
-	void TrimToWorld(float worldBounds, bool isWorldLooping = true) const;
+	void TrimToWorld(float worldBounds, bool isWorldLooping = true) const {
+		TrimToWorld({ 0, 0 }, { worldBounds, worldBounds }, isWorldLooping);
+	}
 	void TrimToWorld(const Elite::Vector2& bottomLeft, const Elite::Vector2& topRight, bool isWorldLooping = true) const;
 
 	//Get - Set

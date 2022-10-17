@@ -17,11 +17,11 @@ Flock::Flock(
 	SteeringAgent* pAgentToEvade /*= nullptr*/, 
 	bool trimWorld /*= false*/)
 
-	: m_WorldSize{ 1000 }
+	: m_WorldSize{ 500 }
 	, m_FlockSize{ 4000 }
 	, m_TrimWorld { trimWorld }
 	, m_pAgentToEvade{pAgentToEvade}
-	, m_NeighborhoodRadius{ 5 }
+	, m_NeighborhoodRadius{ 15 }
 	, m_NrOfNeighbors{0}
 {
 	// TODO: initialize the flock and the memory pool
@@ -65,19 +65,20 @@ void Flock::Update(float deltaT)
 	for (size_t index{}; index < m_Agents.size(); ++index)
 	{
 		// register its neighbors	(-> memory pool is filled with neighbors of the currently evaluated agent)
+		m_CellSpace->UpdateAgentCell(m_Agents[index], m_Agents[index]->GetOldPosition());
+
 		RegisterNeighbors(m_Agents[index]);
 		// update it				
+		m_Agents[index]->SetOldPosition(m_Agents[index]->GetPosition());
 		m_Agents[index]->Update(deltaT); //(->the behaviors can use the neighbors stored in the pool, next iteration they will be the next agent's neighbors)
+		
+		
 		if (m_TrimWorld)
 		{
-			if (m_Agents[index] != NULL)
-			{
-				// Trim the agent to the world
-				m_Agents[index]->TrimToWorld(m_WorldSize);
-				m_CellSpace->UpdateAgentCell(m_Agents[index], m_Agents[index]->GetOldPosition());
-				m_Agents[index]->SetOldPosition(m_Agents[index]->GetPosition());
-			}
+			// Trim the agent to the world
+			m_Agents[index]->TrimToWorld(m_WorldSize);
 		}
+		
 	}
 
 	if (m_pAgentToEvade != NULL) //makes sure to only update if the m_pAgentEvade has already been created
@@ -89,14 +90,15 @@ void Flock::Update(float deltaT)
 	}
 
 	m_DebugAgentWorldPosition = m_Agents[m_DebugAgentIndexPosition]->GetPosition(); //Updates the position of the agent debugger so that multiple function dont have to. 
+
 }
 
 void Flock::Render(float deltaT)
 {
 	//DebugRenderNeighborhoodAndSteering(deltaT);
 	DebugEvadeAgent(deltaT);
-	//m_CellSpace->RenderCells();
-	//m_Agents[10]->SetBodyColor({ 1,1,1 });
+	m_CellSpace->RenderCells();
+	m_Agents[10]->SetBodyColor({ 1,1,1 });
 }
 
 void Flock::UpdateAndRenderUI()
@@ -146,11 +148,11 @@ void Flock::UpdateAndRenderUI()
 	ImGui::Spacing();
 	ImGui::Checkbox("Debug Render Evading Agent", &m_CanDebugRenderEvadeAgent);
 	ImGui::Spacing();
-	ImGui::SliderFloat("Cohesion", &m_pBlendedSteering->GetWeightedBehaviorsRef()[0].weight, 0.f, 1.f, "%.2");
-	ImGui::SliderFloat("Seperation", &m_pBlendedSteering->GetWeightedBehaviorsRef()[1].weight, 0.f, 1.f, "%.2");
-	ImGui::SliderFloat("Seek", &m_pBlendedSteering->GetWeightedBehaviorsRef()[2].weight, 0.f, 1.f, "%.2");
-	ImGui::SliderFloat("Wander", &m_pBlendedSteering->GetWeightedBehaviorsRef()[3].weight, 0.f, 1.f, "%.2");
-	ImGui::SliderFloat("VelocityMatch", &m_pBlendedSteering->GetWeightedBehaviorsRef()[4].weight, 0.f, 0.0f, "%.2");
+	ImGui::SliderFloat("Cohesion", &m_pBlendedSteering->GetWeightedBehaviorsRef()[0].weight, 0.f, 1.f, "%.2f");
+	ImGui::SliderFloat("Seperation", &m_pBlendedSteering->GetWeightedBehaviorsRef()[1].weight, 0.f, 1.f, "%.2f");
+	ImGui::SliderFloat("Seek", &m_pBlendedSteering->GetWeightedBehaviorsRef()[2].weight, 0.f, 1.f, "%.2f");
+	ImGui::SliderFloat("Wander", &m_pBlendedSteering->GetWeightedBehaviorsRef()[3].weight, 0.f, 1.f, "%.2f");
+	ImGui::SliderFloat("VelocityMatch", &m_pBlendedSteering->GetWeightedBehaviorsRef()[4].weight, 0.f, 1.0f, "%.2f");
 
 	//End
 	ImGui::PopAllowKeyboardFocus();
@@ -166,6 +168,8 @@ void Flock::RegisterNeighbors(SteeringAgent* pAgent)
 	if (pAgent != NULL)
 	{
 		m_CellSpace->RegisterNeighbors(pAgent, m_NeighborhoodRadius);
+		m_NrOfNeighbors = m_CellSpace->GetNrOfNeighbors();
+		m_Neighbors = m_CellSpace->GetNeighbors();
 	}
 
 	//for (int index{}; index < m_FlockSize; ++index)
@@ -355,7 +359,7 @@ void Flock::DebugEvadeAgent(float deltaT)
 
 void Flock::InitializeCellSpace()
 {
-	m_CellSpace = new CellSpace(m_WorldSize, m_WorldSize, m_NrOfRowsPartition, m_NrOfColumsPartition, 10);
+	m_CellSpace = new CellSpace(m_WorldSize, m_WorldSize, m_NrOfRowsPartition, m_NrOfColumsPartition, m_FlockSize);
 
 
 	for (int index{}; index < m_FlockSize; ++index)

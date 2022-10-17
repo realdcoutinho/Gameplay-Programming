@@ -31,13 +31,11 @@ SteeringOutput Separation::CalculateSteering(float deltaT, SteeringAgent* pAgent
 
 	for (int index{}; index < nrOfNeightbors; ++index)
 	{
-		if (neighbors[index] != NULL)
-		{
 			float distance{ Elite::Distance(pAgent->GetPosition(), neighbors[index]->GetPosition()) };
 			Elite::Vector2 awayVector{ pAgent->GetPosition() -  neighbors[index]->GetPosition() };
-			Elite::Vector2 invPropVector{ awayVector / distance};
+			Elite::Vector2 invPropVector{ awayVector / powf(distance, 2)};
+
 			totalInvPropVector += invPropVector;
-		}
 	}
 	totalInvPropVector /= float(nrOfNeightbors);
 

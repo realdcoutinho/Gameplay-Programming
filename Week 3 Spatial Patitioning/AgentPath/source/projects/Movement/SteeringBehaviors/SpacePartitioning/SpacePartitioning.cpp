@@ -62,11 +62,11 @@ void CellSpace::UpdateAgentCell(SteeringAgent* agent, Elite::Vector2 oldPos)
 		m_Cells[indexOld].agents.remove(agent);
 		m_Cells[indexCurrent].agents.push_back(agent);
 	}
-	
 }
 
 void CellSpace::RegisterNeighbors(SteeringAgent* agent, float queryRadius)
 {
+	m_NrOfNeighbors = 0;
 	Elite::Vector2 position{ agent->GetPosition() };
 
 
@@ -105,14 +105,14 @@ void CellSpace::RegisterNeighbors(SteeringAgent* agent, float queryRadius)
 				//DEBUGRENDERER2D->DrawSegment(rect[2], rect[3], { 0.0f, 0.0f, 1.0f });
 				//DEBUGRENDERER2D->DrawSegment(rect[0], rect[3], { 0.0f, 0.0f, 1.0f });
 
-
-				int size{ static_cast<int>(m_Cells[index].agents.size()) };
-				for (int agentIndex{}; agentIndex < size; ++agentIndex)
+				for (SteeringAgent* pAgent : m_Cells[index].agents)
 				{
-					if (Elite::IsPointInCircle(agent->GetPosition(), position, queryRadius))
+					if (pAgent == agent)
+						continue;
+					if (Elite::IsPointInCircle(pAgent->GetPosition(), position, queryRadius))
 					{
-						m_Neighbors[m_NrOfNeighbors] = agent;
-						++m_NrOfNeighbors;
+						m_Neighbors[m_NrOfNeighbors++] = pAgent;
+						//++m_NrOfNeighbors;
 					}
 				}
 
@@ -159,6 +159,9 @@ int CellSpace::PositionToIndex(const Elite::Vector2 pos) const
 	int heightIndex{ GetRowIndex(pos.y) };
 
 	int index{ heightIndex * (m_NrOfCols) + widthIndex};
+	assert(index < m_NrOfCells);
+
+	//index = Elite::Clamp(index, 0, m_NrOfCells);
 	return index;
 }
 

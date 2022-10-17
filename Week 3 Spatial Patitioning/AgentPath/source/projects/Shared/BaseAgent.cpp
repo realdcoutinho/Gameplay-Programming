@@ -40,9 +40,6 @@ void BaseAgent::Render(float dt)
 
 	DEBUGRENDERER2D->DrawSolidPolygon(&points[0], 3, { 0,0,0,1 }, DEBUGRENDERER2D->NextDepthSlice());
 }
-void BaseAgent::TrimToWorld(float worldBounds, bool isWorldLooping) const {
-	TrimToWorld({ 0, 0 }, { worldBounds, worldBounds }, isWorldLooping);
-}
 void BaseAgent::TrimToWorld(const Elite::Vector2& bottomLeft, const Elite::Vector2& topRight, bool isWorldLooping /* = true */) const
 {
 	auto pos = GetPosition();
