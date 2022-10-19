@@ -109,7 +109,7 @@ SteeringOutput Arrive::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 
 	if (pAgent->CanRenderBehavior())
 	{
-		DEBUGRENDERER2D->DrawDirection(pAgent->GetPosition(), steering.LinearVelocity, 5, { 0, 1, 0 });
+		DEBUGRENDERER2D->DrawDirection(pAgent->GetPosition(), steering.LinearVelocity, 5, { 0, 1, 1 });
 	}
 
 	return steering;
@@ -130,7 +130,7 @@ SteeringOutput Face::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 	Elite::Vector3 crossZCheck{ Elite::Cross(targetVectorZ, agentDirectionZ) };
 	if (crossZCheck.z < 0)
 		angle = -angle;
-	float haltAngle{ static_cast<float>(Elite::ToRadians(0.005f)) };
+	constexpr float haltAngle{ static_cast<float>(Elite::ToRadians(0.005)) };
 
 
 
@@ -151,10 +151,11 @@ SteeringOutput Face::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 
 
 
+
+	return steering;
 	if (pAgent->CanRenderBehavior())
 	{
-		DEBUGRENDERER2D->DrawDirection(pAgent->GetPosition(), targetVector, 5, { 0, 1.0f, 0 });
+		DEBUGRENDERER2D->DrawDirection(pAgent->GetPosition(), steering.LinearVelocity, 5, { 0, 1.0f, 0 });
 		DEBUGRENDERER2D->DrawDirection(pAgent->GetPosition(), agentDirection, 5, { 0, 0, 1.0f });
 	}
-	return steering;
 }

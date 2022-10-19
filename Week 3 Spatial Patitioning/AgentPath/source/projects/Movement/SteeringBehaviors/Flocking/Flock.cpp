@@ -116,8 +116,7 @@ void Flock::UpdateAgents(float deltaT)
 	for (size_t index{}; index < m_Agents.size(); ++index)
 	{
 		// register its neighbors	(-> memory pool is filled with neighbors of the currently evaluated agent)
-		if(m_CanDebugRenderPartitions)
-			m_CellSpace->UpdateAgentCell(m_Agents[index], m_Agents[index]->GetOldPosition());
+		m_CellSpace->UpdateAgentCell(m_Agents[index], m_Agents[index]->GetOldPosition());
 
 		RegisterNeighbors(m_Agents[index]);
 		// update it				
@@ -166,8 +165,6 @@ Elite::Vector2 Flock::GetAverageNeighborPos() const
 	}
 	return initalVector /= static_cast<float>(m_NrOfNeighbors);
 }
-
-
 
 Elite::Vector2 Flock::GetAverageNeighborVelocity() const
 {
@@ -234,11 +231,7 @@ Flock::~Flock()
 		SAFE_DELETE(pAgent);
 	}
 	m_Agents.clear();
-	//for (auto pnei : m_Neighbors)
-	//{
-	//	SAFE_DELETE(pnei);
-	//}
-	//m_Neighbors.clear();
+	m_Neighbors.clear();
 }
 
 
@@ -247,17 +240,16 @@ void Flock::Render(float deltaT)
 {
 	m_pAgentToEvade->Render(deltaT);
 
-
-
 	if(m_CanRenderCells)
 		m_CellSpace->RenderCells();
 
 	if (m_CanDebugSpatialPartitioningAgent)
 		m_CellSpace->DebugAgent();
 
-	if(m_CanDrawWorldBounds)
-		RenderWorldBounds();
+	if (m_CanDebugRenderNeighborhood)
+		DebugNeighborhood(deltaT);
 
+	RenderWorldBounds();
 	CanDebugRender(deltaT);
 	CanDebugEvadeAgent(deltaT);
 }
@@ -290,57 +282,33 @@ void Flock::RenderWorldBounds()
 	DEBUGRENDERER2D->DrawPolygon(&points[0], 4, { 1,0,0,1 }, 0.4f);
 }
 
-//void Flock::DebugRenderNeighborhoodAndSteering(float deltaT)
-//{
-//	for (int i{}; i < m_FlockSize; ++i)
-//	{
-//		m_Agents[i]->Render(deltaT);
-//		if (m_CanDebugRenderNeighborhood)
-//		{
-//			m_Agents[m_DebugAgentIndexPosition]->Render(deltaT);
-//			m_Agents[m_DebugAgentIndexPosition]->SetRenderBehavior(true);
-//			m_Agents[m_DebugAgentIndexPosition]->SetBodyColor({ 1.0f, 1.0f, 1.0f });
-//			if (m_Agents[i] != m_Agents[m_DebugAgentIndexPosition])
-//			{
-//				if (IsPointInCircle(m_DebugAgentWorldPosition, m_Agents[i]->GetPosition(), m_NeighborhoodRadius))
-//				{
-//					//if(m_CanDebugRender)
-//					//	m_Agents[i]->SetRenderBehavior(true);
-//					
-//				}
-//				else
-//				{
-//
-//					m_Agents[i]->SetRenderBehavior(false);
-//					m_Agents[i]->SetBodyColor({ 1.0f, 1.0f, 0.0f });
-//				}
-//				DEBUGRENDERER2D->DrawCircle(m_DebugAgentWorldPosition, m_NeighborhoodRadius, { 1.0f, 1.0f, 1.0f }, 0);
-//			}
-//		}
-//		if (!m_CanDebugRenderNeighborhood)
-//		{
-//			m_Agents[m_DebugAgentIndexPosition]->SetBodyColor({ 1.0f, 1.0f, 0.0f });
-//			if (m_Agents[i] != m_Agents[m_DebugAgentIndexPosition])
-//			{
-//				if (IsPointInCircle(m_DebugAgentWorldPosition, m_Agents[i]->GetPosition(), m_NeighborhoodRadius))
-//					m_Agents[i]->SetBodyColor({ 1.0f, 1.0f, 0.0f });
-//			}
-//		}
-//
-//
-//	}
-//	//if (m_CanDebugRenderSteering)
-//	//{
-//	//	m_Agents[m_DebugAgentIndexPosition]->Render(deltaT);
-//	//	m_Agents[m_DebugAgentIndexPosition]->SetRenderBehavior(true);
-//	//	m_Agents[m_DebugAgentIndexPosition]->SetBodyColor({ 0.0f, 1.0f, 0.0f });
-//	//}
-//	//else
-//	//{
-//	//		m_Agents[m_DebugAgentIndexPosition]->SetRenderBehavior(false);
-//	//}
-//
-//}
+void Flock::DebugNeighborhood(float deltaT)
+{
+	for (int i{}; i < m_FlockSize; ++i)
+	{
+		DEBUGRENDERER2D->DrawCircle(m_DebugAgentWorldPosition, m_NeighborhoodRadius, { 1.0f, 1.0f, 1.0f }, -1);
+		DEBUGRENDERER2D->DrawSolidCircle(m_Agents[m_DebugAgentIndexPosition]->GetPosition(), m_Agents[m_DebugAgentIndexPosition]->GetRadius(), m_Agents[m_DebugAgentIndexPosition]->GetDirection(), {0.0f, 0.3f, 1.0f}, -1);
+		m_Agents[m_DebugAgentIndexPosition]->SetBodyColor({ 1.0f, 1.0f, 1.0f });
+
+		if (m_Agents[i] != m_Agents[m_DebugAgentIndexPosition])
+		{
+			if (IsPointInCircle(m_DebugAgentWorldPosition, m_Agents[i]->GetPosition(), m_NeighborhoodRadius))
+			{
+				float deepth = DEBUGRENDERER2D->NextDepthSlice();
+				DEBUGRENDERER2D->DrawSolidCircle(m_Agents[i]->GetPosition(), m_Agents[i]->GetRadius(), m_Agents[i]->GetDirection(), { 0.0f, 1.0f, 0.0f }, -1);
+			}
+		}
+		if (!m_CanDebugRenderNeighborhood)
+		{
+			m_Agents[m_DebugAgentIndexPosition]->SetBodyColor({ 1.0f, 1.0f, 0.0f });
+			if (m_Agents[i] != m_Agents[m_DebugAgentIndexPosition])
+			{
+				if (IsPointInCircle(m_DebugAgentWorldPosition, m_Agents[i]->GetPosition(), m_NeighborhoodRadius))
+					m_Agents[i]->SetBodyColor({ 1.0f, 1.0f, 0.0f });
+			}
+		}
+	}
+}
 
 void Flock::CanDebugEvadeAgent(float deltaT)
 {
@@ -400,7 +368,7 @@ void Flock::UpdateAndRenderUI()
 	ImGui::Spacing();
 	ImGui::Checkbox("Debug Render Evading Agent", &m_CanDebugRenderEvadeAgent);
 	ImGui::Spacing();
-	ImGui::Checkbox("World Bounds", &m_CanDrawWorldBounds);
+	ImGui::Checkbox("Debug Neighborhood", &m_CanDebugRenderNeighborhood);
 	ImGui::Spacing();
 	ImGui::Text("Behavior Weights");
 	ImGui::SliderFloat("Cohesion", &m_pBlendedSteering->GetWeightedBehaviorsRef()[0].weight, 0.f, 1.f, "%.2f");
@@ -419,7 +387,6 @@ void Flock::UpdateAndRenderUI()
 	//End
 	ImGui::PopAllowKeyboardFocus();
 	ImGui::End();
-	
 }
 
 

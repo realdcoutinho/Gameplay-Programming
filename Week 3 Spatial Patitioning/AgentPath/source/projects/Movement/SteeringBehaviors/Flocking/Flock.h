@@ -81,7 +81,7 @@ private:
 	void UpdateAgents(float deltaT);
 	void UpdateEvadingAgent(float deltaT);
 
-	//void DebugRenderNeighborhoodAndSteering(float deltaT);
+	void DebugNeighborhood(float deltaT);
 	void CanDebugRender(float deltaT);
 	void CanDebugEvadeAgent(float deltaT);
 
@@ -91,7 +91,7 @@ private:
 	//debugs and renders
 	bool m_CanDebugRender{ false };
 	bool m_CanDebugRenderEvadeAgent{ false };
-	bool m_CanDrawWorldBounds{ true };
+	bool m_CanDebugRenderNeighborhood{ false };
 
 	bool m_CanRenderCells{ false };
 	bool m_CanDebugSpatialPartitioningAgent{ false };

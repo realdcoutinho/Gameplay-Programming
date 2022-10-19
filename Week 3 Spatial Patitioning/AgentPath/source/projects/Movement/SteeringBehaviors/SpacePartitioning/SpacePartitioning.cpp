@@ -96,10 +96,6 @@ void CellSpace::RegisterNeighbors(SteeringAgent* agent, float queryRadius)
 		{ position.x + queryRadius ,  position.y - queryRadius  }, //bottomRight //3
 	};
 
-	//if (m_DegubAgent == agent)
-		//IsDebugAgent(rectPoints, {0.0f, 1.0f, 0.0f});
-
-
 	int minColumn{ GetColumnIndex(rectPoints[0].x) };
 	int maxColumn{ GetColumnIndex(rectPoints[2].x) };
 
@@ -115,10 +111,6 @@ void CellSpace::RegisterNeighbors(SteeringAgent* agent, float queryRadius)
 			if (Elite::IsOverlapping(m_Cells[index].GetRectPoints(), position, queryRadius))
 			{
 				const std::vector<Elite::Vector2> rect = m_Cells[index].GetRectPoints();
-
-				//if (m_DegubAgent == agent)
-					//IsDebugAgent(rect, { 0.0f, 0.0f, 1.0f });
-
 
 				for (SteeringAgent* pAgent : m_Cells[index].agents)
 				{
