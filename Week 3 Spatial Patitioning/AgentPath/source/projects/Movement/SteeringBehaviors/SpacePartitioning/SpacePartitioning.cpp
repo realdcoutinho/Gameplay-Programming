@@ -147,7 +147,7 @@ void CellSpace::EmptyCells()
 #pragma region IndexPosition Calculations
 int CellSpace::PositionToIndex(const Elite::Vector2 pos) const
 {
-	int widthIndex{ GetColumnIndex(pos.x) };
+	int widthIndex{ GetColumnIndex(pos.x) }; //Gets the width-> Column Index
 	int heightIndex{ GetRowIndex(pos.y) };
 
 	int index{ heightIndex * (m_NrOfCols) + widthIndex};
@@ -157,16 +157,20 @@ int CellSpace::PositionToIndex(const Elite::Vector2 pos) const
 
 int CellSpace::GetColumnIndex(const float xPosition) const
 {
-	int widthIndex{ static_cast<int>(xPosition / m_CellWidth) };
-	widthIndex = Elite::Clamp(widthIndex, 0, m_NrOfCols - 1);
+	int widthIndex{ static_cast<int>(xPosition / m_CellWidth) }; //The result will gives us the number of the column to which the xPos belongs to
+																 //Because the result is an int, it will the correct cordinate, most of the times
+	widthIndex = Elite::Clamp(widthIndex, 0, m_NrOfCols - 1);    //The xPos might go above the m_SpaceWidth. If that is the case the widthIndex might go outside of bounds
+																 //That is fixed by clamping the width index between two values: 0 (min index) and m_NrOfCols-1 (max index)  
 	return widthIndex;
 }
 
 
 int CellSpace::GetRowIndex(const float yPosition) const
 {
-	int heightIndex{ static_cast<int>(yPosition / m_CellHeight) };
-	heightIndex = Elite::Clamp(heightIndex, 0, m_NrOfRows - 1);
+	int heightIndex{ static_cast<int>(yPosition / m_CellHeight) }; //The result will gives us the number of the row to which the yPos belongs to
+																   //Because the result is an int, it will the correct cordinate, most of the times
+	heightIndex = Elite::Clamp(heightIndex, 0, m_NrOfRows - 1);	   //The yPos might go above the m_SpaceHeight. If that is the case the heightIndex might go outside of bounds
+																   //That is fixed by clamping the width index between two values: 0 (min index) and m_NrOfRows-1 (max index)  
 	return heightIndex;
 }
 #pragma endregion

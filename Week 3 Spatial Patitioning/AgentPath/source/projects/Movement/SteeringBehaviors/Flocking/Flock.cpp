@@ -17,7 +17,7 @@ Flock::Flock(
 	SteeringAgent* pAgentToEvade /*= nullptr*/, 
 	bool trimWorld /*= false*/)
 
-	: m_WorldSize{ 300 }
+	: m_WorldSize{ worldSize }
 	, m_FlockSize{ 4000 }
 	, m_TrimWorld { trimWorld }
 	, m_pAgentToEvade{pAgentToEvade}

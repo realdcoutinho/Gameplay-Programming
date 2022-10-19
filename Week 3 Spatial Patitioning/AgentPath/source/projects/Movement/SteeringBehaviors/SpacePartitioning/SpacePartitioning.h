@@ -53,7 +53,7 @@ public:
 
 	void RenderCells()const;
 
-
+	//my  functions
 	void SetDebugAgent(SteeringAgent* agent);
 	void SetDebugAgentNeighborhoodRadius(float queryradius);
 

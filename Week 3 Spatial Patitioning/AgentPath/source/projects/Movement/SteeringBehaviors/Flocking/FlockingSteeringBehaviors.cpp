@@ -10,11 +10,16 @@
 SteeringOutput Cohesion::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 {
 	Elite::Vector2 target{ m_pFlock->GetAverageNeighborPos()};
+	Elite::Vector2 agentPosition{ pAgent->GetPosition() };
 	SetTarget(target);
+
+	float distance{ Elite::Distance(target, agentPosition) };
+	float absDistance{ abs(distance) };
 
 	if (pAgent->CanRenderBehavior())
 	{
-		DEBUGRENDERER2D->DrawPoint(target, 5, { 0, 1, 0 });
+		DEBUGRENDERER2D->DrawPoint(target, 5, { 1, 0, 1 });
+		//DEBUGRENDERER2D->DrawDirection(agentPosition, target, distance, { 1, 0, 1 });
 	}
 	return Seek::CalculateSteering(deltaT, pAgent);
 }
@@ -43,7 +48,7 @@ SteeringOutput Separation::CalculateSteering(float deltaT, SteeringAgent* pAgent
 
 	if (pAgent->CanRenderBehavior())
 	{
-		DEBUGRENDERER2D->DrawSegment(pAgent->GetPosition(), m_Target.Position, Elite::Color(0, 1, 1));
+		DEBUGRENDERER2D->DrawSegment(pAgent->GetPosition(), m_Target.Position, Elite::Color(0, 0, 1));
 	}
 
 	SteeringOutput steering{ Seek::CalculateSteering(deltaT, pAgent) };
