@@ -94,21 +94,7 @@ void Flock::InitializeCellSpace()
 	}
 }
 
-void Flock::CanDebugRender(float deltaT)
-{
-	if (m_CanDebugRender)
-	{
-		m_Agents[m_DebugAgentIndexPosition]->Render(deltaT);
-		m_Agents[m_DebugAgentIndexPosition]->SetRenderBehavior(true);
-		m_Agents[m_DebugAgentIndexPosition]->SetBodyColor({ 1.0f, 1.0f, 1.0f });
-		DEBUGRENDERER2D->DrawCircle(m_DebugAgentWorldPosition, m_NeighborhoodRadius, { 1.0f, 1.0f, 1.0f }, 0);
-	}
-	else
-	{
-		m_Agents[m_DebugAgentIndexPosition]->SetRenderBehavior(false);
-		m_Agents[m_DebugAgentIndexPosition]->SetBodyColor({ 1.0f, 0.0f, 0.0f });
-	}
-}
+
 #pragma endregion
 
 #pragma region updates
@@ -259,15 +245,37 @@ Flock::~Flock()
 #pragma region renders and debugs
 void Flock::Render(float deltaT)
 {
-	if (m_CanDebugSpatialPartitioningAgent)
-		m_CellSpace->DebugAgent();
+	m_pAgentToEvade->Render(deltaT);
+
+
+
 	if(m_CanRenderCells)
 		m_CellSpace->RenderCells();
+
+	if (m_CanDebugSpatialPartitioningAgent)
+		m_CellSpace->DebugAgent();
+
 	if(m_CanDrawWorldBounds)
 		RenderWorldBounds();
 
 	CanDebugRender(deltaT);
 	CanDebugEvadeAgent(deltaT);
+}
+
+void Flock::CanDebugRender(float deltaT)
+{
+	if (m_CanDebugRender)
+	{
+		m_Agents[m_DebugAgentIndexPosition]->Render(deltaT);
+		m_Agents[m_DebugAgentIndexPosition]->SetRenderBehavior(true);
+		m_Agents[m_DebugAgentIndexPosition]->SetBodyColor({ 1.0f, 1.0f, 1.0f });
+		DEBUGRENDERER2D->DrawCircle(m_DebugAgentWorldPosition, m_NeighborhoodRadius, { 1.0f, 1.0f, 1.0f }, 0);
+	}
+	else
+	{
+		m_Agents[m_DebugAgentIndexPosition]->SetRenderBehavior(false);
+		m_Agents[m_DebugAgentIndexPosition]->SetBodyColor({ 1.0f, 0.0f, 0.0f });
+	}
 }
 
 void Flock::RenderWorldBounds()
@@ -336,17 +344,16 @@ void Flock::RenderWorldBounds()
 
 void Flock::CanDebugEvadeAgent(float deltaT)
 {
-
 	if (m_CanDebugRenderEvadeAgent)
 	{
 		m_pAgentToEvade->SetRenderBehavior(true);
 		DEBUGRENDERER2D->DrawCircle(m_pAgentToEvade->GetPosition(), m_EvadeAgentRadius, Elite::Color(0.0f, 0.0f, 1.0f), 0);
 	}
 	else
+	{
 		m_pAgentToEvade->SetRenderBehavior(false);
-
+	}
 	m_pAgentToEvade->Render(deltaT);
-
 }
 #pragma endregion
 

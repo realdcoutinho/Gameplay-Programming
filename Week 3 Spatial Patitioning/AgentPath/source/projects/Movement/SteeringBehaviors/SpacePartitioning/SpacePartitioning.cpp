@@ -181,10 +181,12 @@ void CellSpace::RenderCells() const
 	for (int index{}; index < m_NrOfCells; ++index)
 	{
 		const std::vector<Elite::Vector2> rect = m_Cells[index].GetRectPoints();
-		DEBUGRENDERER2D->DrawSegment(rect[0], rect[1], { 1.0f, 0.0f, 0.0f });
-		DEBUGRENDERER2D->DrawSegment(rect[1], rect[2], { 1.0f, 0.0f, 0.0f });
-		DEBUGRENDERER2D->DrawSegment(rect[2], rect[3], { 1.0f, 0.0f, 0.0f });
-		DEBUGRENDERER2D->DrawSegment(rect[0], rect[3], { 1.0f, 0.0f, 0.0f });
+		float deepth = DEBUGRENDERER2D->NextDepthSlice();
+
+		DEBUGRENDERER2D->DrawSegment(rect[0], rect[1], { 1.0f, 0.0f, 0.0f }, deepth);
+		DEBUGRENDERER2D->DrawSegment(rect[1], rect[2], { 1.0f, 0.0f, 0.0f }, deepth);
+		DEBUGRENDERER2D->DrawSegment(rect[2], rect[3], { 1.0f, 0.0f, 0.0f }, deepth);
+		DEBUGRENDERER2D->DrawSegment(rect[0], rect[3], { 1.0f, 0.0f, 0.0f }, deepth);
 
 		std::string strNrNeighbors{ std::to_string(m_Cells[index].agents.size()) };
 
