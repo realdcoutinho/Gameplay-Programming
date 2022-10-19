@@ -14,8 +14,8 @@
   main.cpp
   App_Sandbox.cpp
   SandboxAgent.cpp
-C:\Users\diogo\Documents\GitHub\Gameplay Programming\Week 3 Spatial Patitioning\AgentPath\source\projects\Movement\Sandbox\SandboxAgent.cpp(61,45): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\diogo\Documents\GitHub\Gameplay Programming\Week 3 Spatial Patitioning\AgentPath\source\projects\Movement\Sandbox\SandboxAgent.cpp(64,28): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\diogo\Documents\GitHub\Gameplay-Programming\Week 3 Spatial Patitioning\AgentPath\source\projects\Movement\Sandbox\SandboxAgent.cpp(61,45): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\diogo\Documents\GitHub\Gameplay-Programming\Week 3 Spatial Patitioning\AgentPath\source\projects\Movement\Sandbox\SandboxAgent.cpp(64,28): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   App_CombinedSteering.cpp
   CombinedSteeringBehaviors.cpp
   App_Flocking.cpp
@@ -30,7 +30,7 @@ C:\Users\diogo\Documents\GitHub\Gameplay Programming\Week 3 Spatial Patitioning\
   BaseAgent.cpp
   Generating code
   Previous IPDB not found, fall back to full compilation.
-  All 1845 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 1887 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
-  GPP_Framework.vcxproj -> C:\Users\diogo\Documents\GitHub\Gameplay Programming\Week 3 Spatial Patitioning\AgentPath\bin\Release\GPP_Framework.exe
+  GPP_Framework.vcxproj -> C:\Users\diogo\Documents\GitHub\Gameplay-Programming\Week 3 Spatial Patitioning\AgentPath\bin\Release\GPP_Framework.exe
   0 File(s) copied

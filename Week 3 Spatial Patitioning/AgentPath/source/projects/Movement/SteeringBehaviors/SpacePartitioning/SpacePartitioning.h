@@ -32,7 +32,6 @@ struct Cell
 	Elite::Rect boundingBox;
 
 	std::vector<Elite::Vector2> oldPositions;
-
 };
 
 // --- Partitioned Space ---
@@ -54,6 +53,12 @@ public:
 
 	void RenderCells()const;
 
+
+	void SetDebugAgent(SteeringAgent* agent);
+	void SetDebugAgentNeighborhoodRadius(float queryradius);
+
+	void IsDebugAgent(std::vector<Elite::Vector2>, Elite::Color color) const;
+	void DebugAgent()const ;
 private:
 	// Cells and properties
 	std::vector<Cell> m_Cells;
@@ -75,11 +80,17 @@ private:
 	int PositionToIndex(const Elite::Vector2 pos) const;
 
 	int m_NrOfCells;
+	SteeringAgent* m_DegubAgent{};
+	float m_NeighborhoodRadius{};
+
 
 	//my functions
 	void InitializeCells();
 	int GetColumnIndex(const float xPosition) const;
 	int GetRowIndex(const float yPosition) const;
+
+
+
 
 
 

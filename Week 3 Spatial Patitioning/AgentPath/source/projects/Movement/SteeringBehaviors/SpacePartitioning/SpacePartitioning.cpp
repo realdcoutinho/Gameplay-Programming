@@ -46,6 +46,25 @@ CellSpace::CellSpace(float width, float height, int rows, int cols, int maxEntit
 	InitializeCells();
 }
 
+void CellSpace::InitializeCells()
+{
+	m_CellWidth = m_SpaceWidth / m_NrOfCols; //width
+	m_CellHeight = m_SpaceHeight / m_NrOfRows; //height
+	m_NrOfCells = m_NrOfCols * m_NrOfRows; //equal to area
+
+	for (int rows{}; rows < m_NrOfRows; ++rows)
+	{
+		for (int cols{}; cols < m_NrOfCols; ++cols)
+		{
+			int left{ cols * static_cast<int>(m_CellWidth) };
+			int bottom{ rows * static_cast<int>(m_CellHeight) };
+			m_Cells.push_back(Cell(static_cast<float>(left), static_cast<float>(bottom),
+				static_cast<float>(m_CellWidth), static_cast<float>(m_CellHeight)));
+		}
+	}
+}
+
+
 void CellSpace::AddAgent(SteeringAgent* agent)
 {
 	int index = PositionToIndex(agent->GetPosition());
@@ -69,9 +88,6 @@ void CellSpace::RegisterNeighbors(SteeringAgent* agent, float queryRadius)
 	m_NrOfNeighbors = 0;
 	Elite::Vector2 position{ agent->GetPosition() };
 
-
-	//DEBUGRENDERER2D->DrawCircle(position, queryRadius, { 0, 1, 0 }, 0);
-
 	std::vector<Elite::Vector2> rectPoints =
 	{
 		{ position.x - queryRadius , position.y - queryRadius  }, //bomttomLeft //0
@@ -80,10 +96,9 @@ void CellSpace::RegisterNeighbors(SteeringAgent* agent, float queryRadius)
 		{ position.x + queryRadius ,  position.y - queryRadius  }, //bottomRight //3
 	};
 
-	//DEBUGRENDERER2D->DrawSegment(rectPoints[0], rectPoints[1], { 0.0f, 1.0f, 0.0f });
-	//DEBUGRENDERER2D->DrawSegment(rectPoints[1], rectPoints[2], { 0.0f, 1.0f, 0.0f });
-	//DEBUGRENDERER2D->DrawSegment(rectPoints[2], rectPoints[3], { 0.0f, 1.0f, 0.0f });
-	//DEBUGRENDERER2D->DrawSegment(rectPoints[0], rectPoints[3], { 0.0f, 1.0f, 0.0f });
+	//if (m_DegubAgent == agent)
+		//IsDebugAgent(rectPoints, {0.0f, 1.0f, 0.0f});
+
 
 	int minColumn{ GetColumnIndex(rectPoints[0].x) };
 	int maxColumn{ GetColumnIndex(rectPoints[2].x) };
@@ -100,34 +115,27 @@ void CellSpace::RegisterNeighbors(SteeringAgent* agent, float queryRadius)
 			if (Elite::IsOverlapping(m_Cells[index].GetRectPoints(), position, queryRadius))
 			{
 				const std::vector<Elite::Vector2> rect = m_Cells[index].GetRectPoints();
-				//DEBUGRENDERER2D->DrawSegment(rect[0], rect[1], { 0.0f, 0.0f, 1.0f });
-				//DEBUGRENDERER2D->DrawSegment(rect[1], rect[2], { 0.0f, 0.0f, 1.0f });
-				//DEBUGRENDERER2D->DrawSegment(rect[2], rect[3], { 0.0f, 0.0f, 1.0f });
-				//DEBUGRENDERER2D->DrawSegment(rect[0], rect[3], { 0.0f, 0.0f, 1.0f });
+
+				//if (m_DegubAgent == agent)
+					//IsDebugAgent(rect, { 0.0f, 0.0f, 1.0f });
+
 
 				for (SteeringAgent* pAgent : m_Cells[index].agents)
 				{
 					if (pAgent == agent)
 						continue;
 					if (Elite::IsPointInCircle(pAgent->GetPosition(), position, queryRadius))
-					{
 						m_Neighbors[m_NrOfNeighbors++] = pAgent;
-						//++m_NrOfNeighbors;
-					}
 				}
-
-				//for (SteeringAgent* agent : m_Cells[index].agents)
-				//{
-				//	if (Elite::IsPointInCircle(agent->GetPosition(), position, queryRadius))
-				//	{
-				//		m_Neighbors[m_NrOfNeighbors] = agent;
-				//		++m_NrOfNeighbors;
-				//	}
-				//}
 			}
 		}
 	}
 }
+
+
+
+
+
 
 void CellSpace::EmptyCells()
 {
@@ -135,33 +143,15 @@ void CellSpace::EmptyCells()
 		c.agents.clear();
 }
 
-void CellSpace::RenderCells() const
-{
-	for (int index{}; index < m_NrOfCells; ++index)
-	{
-		const std::vector<Elite::Vector2> rect = m_Cells[index].GetRectPoints();
-		DEBUGRENDERER2D->DrawSegment(rect[0], rect[1], { 1.0f, 0.0f, 0.0f });
-		DEBUGRENDERER2D->DrawSegment(rect[1], rect[2], { 1.0f, 0.0f, 0.0f });
-		DEBUGRENDERER2D->DrawSegment(rect[2], rect[3], { 1.0f, 0.0f, 0.0f });
-		DEBUGRENDERER2D->DrawSegment(rect[0], rect[3], { 1.0f, 0.0f, 0.0f });
 
-		std::string strNrNeighbors{ std::to_string(m_Cells[index].agents.size()) };
-		std::string strNrIndex{ std::to_string(index) };
-
-		DEBUGRENDERER2D->DrawString({ rect[1].x, rect[1].y }, strNrNeighbors.c_str());
-		//DEBUGRENDERER2D->DrawString({ rect[1].x, rect[1].y }, strNrIndex.c_str());
-	}
-}
-
+#pragma region IndexPosition Calculations
 int CellSpace::PositionToIndex(const Elite::Vector2 pos) const
 {
 	int widthIndex{ GetColumnIndex(pos.x) };
 	int heightIndex{ GetRowIndex(pos.y) };
 
 	int index{ heightIndex * (m_NrOfCols) + widthIndex};
-	assert(index < m_NrOfCells);
 
-	//index = Elite::Clamp(index, 0, m_NrOfCells);
 	return index;
 }
 
@@ -179,23 +169,85 @@ int CellSpace::GetRowIndex(const float yPosition) const
 	heightIndex = Elite::Clamp(heightIndex, 0, m_NrOfRows - 1);
 	return heightIndex;
 }
+#pragma endregion
 
-void CellSpace::InitializeCells()
+#pragma region renders and debugs
+void CellSpace::RenderCells() const
 {
-	m_CellWidth = m_SpaceWidth / m_NrOfCols; //width
-	m_CellHeight = m_SpaceHeight / m_NrOfRows; //height
-	m_NrOfCells = m_NrOfCols * m_NrOfRows; //equal to area
-
-	for (int rows{}; rows < m_NrOfRows; ++rows)
+	for (int index{}; index < m_NrOfCells; ++index)
 	{
-		for (int cols{}; cols < m_NrOfCols; ++cols)
+		const std::vector<Elite::Vector2> rect = m_Cells[index].GetRectPoints();
+		DEBUGRENDERER2D->DrawSegment(rect[0], rect[1], { 1.0f, 0.0f, 0.0f });
+		DEBUGRENDERER2D->DrawSegment(rect[1], rect[2], { 1.0f, 0.0f, 0.0f });
+		DEBUGRENDERER2D->DrawSegment(rect[2], rect[3], { 1.0f, 0.0f, 0.0f });
+		DEBUGRENDERER2D->DrawSegment(rect[0], rect[3], { 1.0f, 0.0f, 0.0f });
+
+		std::string strNrNeighbors{ std::to_string(m_Cells[index].agents.size()) };
+
+		DEBUGRENDERER2D->DrawString({ rect[1].x, rect[1].y }, strNrNeighbors.c_str());
+	}
+}
+
+void CellSpace::SetDebugAgent(SteeringAgent* agent)
+{
+	m_DegubAgent = agent;
+}
+
+void CellSpace::SetDebugAgentNeighborhoodRadius(float queryradius)
+{
+	m_NeighborhoodRadius = queryradius;
+}
+
+void CellSpace::DebugAgent() const
+{
+	Elite::Vector2 position{ m_DegubAgent->GetPosition() };
+
+	std::vector<Elite::Vector2> rectPoints =
+	{
+		{ position.x - m_NeighborhoodRadius , position.y - m_NeighborhoodRadius  }, //bomttomLeft //0
+		{ position.x - m_NeighborhoodRadius ,  position.y + m_NeighborhoodRadius  }, //topLeft //1
+		{ position.x + m_NeighborhoodRadius ,  position.y + m_NeighborhoodRadius }, //topRight //2
+		{ position.x + m_NeighborhoodRadius ,  position.y - m_NeighborhoodRadius  }, //bottomRight //3
+	};
+
+	DEBUGRENDERER2D->DrawCircle(position, m_DegubAgent->GetRadius(), { 0.0f, 1.0f, 0.0f }, 0);
+	DEBUGRENDERER2D->DrawSegment(rectPoints[0], rectPoints[1], { 0.0f, 1.0f, 0.0f });
+	DEBUGRENDERER2D->DrawSegment(rectPoints[1], rectPoints[2], { 0.0f, 1.0f, 0.0f });
+	DEBUGRENDERER2D->DrawSegment(rectPoints[2], rectPoints[3], { 0.0f, 1.0f, 0.0f });
+	DEBUGRENDERER2D->DrawSegment(rectPoints[0], rectPoints[3], { 0.0f, 1.0f, 0.0f });
+
+	int minColumn{ GetColumnIndex(rectPoints[0].x) };
+	int maxColumn{ GetColumnIndex(rectPoints[2].x) };
+	int minRow{ GetRowIndex(rectPoints[0].y) };
+	int maxRow{ GetRowIndex(rectPoints[2].y) };
+
+
+	for (int indexRow{ minRow }; indexRow <= maxRow; ++indexRow)
+	{
+		for (int indexColumn{ minColumn }; indexColumn <= maxColumn; ++indexColumn)
 		{
-			int left{ cols * static_cast<int>(m_CellWidth) };
-			int bottom{ rows * static_cast<int>(m_CellHeight) };
-			m_Cells.push_back(Cell(static_cast<float>(left), static_cast<float>(bottom),
-				static_cast<float>(m_CellWidth), static_cast<float>(m_CellHeight)));
+			int index{ indexRow * (m_NrOfRows)+indexColumn };
+			if (Elite::IsOverlapping(m_Cells[index].GetRectPoints(), position, m_NeighborhoodRadius))
+			{
+				const std::vector<Elite::Vector2> rect = m_Cells[index].GetRectPoints();
+				DEBUGRENDERER2D->DrawCircle(position, m_NeighborhoodRadius, { 0.0f, 1.0f, 0.0f }, 0);
+				DEBUGRENDERER2D->DrawSegment(rect[0], rect[1], { 0.0f, 0.0f, 1.0f });
+				DEBUGRENDERER2D->DrawSegment(rect[1], rect[2], { 0.0f, 0.0f, 1.0f });
+				DEBUGRENDERER2D->DrawSegment(rect[2], rect[3], { 0.0f, 0.0f, 1.0f });
+				DEBUGRENDERER2D->DrawSegment(rect[0], rect[3], { 0.0f, 0.0f, 1.0f });
+			}
 		}
 	}
 }
 
 
+void CellSpace::IsDebugAgent(std::vector<Elite::Vector2> rect, Elite::Color color) const
+{
+	DEBUGRENDERER2D->DrawCircle(m_DegubAgent->GetPosition(), m_DegubAgent->GetRadius(), color, 0);
+	DEBUGRENDERER2D->DrawCircle(m_DegubAgent->GetPosition(), 5, color, 0); // chanfe 15 later
+	DEBUGRENDERER2D->DrawSegment(rect[0], rect[1], color);
+	DEBUGRENDERER2D->DrawSegment(rect[1], rect[2], color);
+	DEBUGRENDERER2D->DrawSegment(rect[2], rect[3], color);
+	DEBUGRENDERER2D->DrawSegment(rect[0], rect[3], color);
+}
+#pragma endregion

@@ -30,7 +30,7 @@ private:
 	bool m_UseMouseTarget = true;
 	bool m_VisualizeMouseTarget = true;
 	
-	float m_TrimWorldSize = 100.f;
+	float m_TrimWorldSize = 250.f;
 	int m_FlockSize = 100;
 
 	Flock* m_pFlock = nullptr;

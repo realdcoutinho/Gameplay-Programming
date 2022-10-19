@@ -41,14 +41,27 @@ private:
 	std::vector<SteeringAgent*> m_Agents;
 	std::vector<SteeringAgent*> m_Neighbors;
 
+	//sata members for initialization
 	bool m_TrimWorld = false;
 	float m_WorldSize = 0.f;
-
 	float m_NeighborhoodRadius = 5.f;
 	int m_NrOfNeighbors = 0;
+	float m_MaxAgentVelocity{ 60.0f };
+	float m_MaxEvadeAgentVelocity{ 40.0f };
+	float m_EvadeAgentRadius{ 15 };
 
-	SteeringAgent* m_pAgentToEvade = nullptr;
+	int m_NrOfColumsPartition{ 25 };
+	int m_NrOfRowsPartition{ 25 };
+
+	//random debugging agent
+	Elite::Vector2 m_DebugAgentWorldPosition{};
+	int m_DebugAgentIndexPosition{};
 	
+	//evading agent
+	SteeringAgent* m_pAgentToEvade = nullptr;
+	CellSpace* m_CellSpace = nullptr;
+
+
 	//Steering Behaviors
 	Seek* m_pSeekBehavior = nullptr;
 	Separation* m_pSeparationBehavior = nullptr;
@@ -56,7 +69,6 @@ private:
 	VelocityMatch* m_pVelMatchBehavior = nullptr;
 	Wander* m_pWanderBehavior = nullptr;
 	Evade* m_pEvadeBehavior = nullptr;
-
 	BlendedSteering* m_pBlendedSteering = nullptr;
 	PrioritySteering* m_pPrioritySteering = nullptr;
 
@@ -66,25 +78,24 @@ private:
 	void InitializeEvadingAgent();
 	void InitializeCellSpace();
 
-	void DebugRenderNeighborhoodAndSteering(float deltaT);
-	void DebugEvadeAgent(float deltaT);
+	void UpdateAgents(float deltaT);
+	void UpdateEvadingAgent(float deltaT);
 
-	bool m_CanDebugRenderSteering{ false };
-	bool m_CanDebugRenderNeighborhood{ false };
-	bool m_CanDebugRenderPartitions{ false };
+	//void DebugRenderNeighborhoodAndSteering(float deltaT);
+	void CanDebugRender(float deltaT);
+	void CanDebugEvadeAgent(float deltaT);
+
+	void RenderWorldBounds();
+
+
+	//debugs and renders
+	bool m_CanDebugRender{ false };
 	bool m_CanDebugRenderEvadeAgent{ false };
+	bool m_CanDrawWorldBounds{ true };
 
-	int m_DebugAgentIndexPosition{};
-	float m_MaxAgentVelocity{ 60.0f };
-	float m_MaxEvadeAgentVelocity{ 40.0f };
-	float m_EvadeAgentRadius{ 20.0f };
-
-	int m_NrOfColumsPartition{ 25 };
-	int m_NrOfRowsPartition{ 25 };
-	Elite::Vector2 m_DebugAgentWorldPosition{};
-
-	CellSpace* m_CellSpace = nullptr;
-
+	bool m_CanRenderCells{ false };
+	bool m_CanDebugSpatialPartitioningAgent{ false };
+	bool m_CanDebugRenderPartitions{ true };
 
 private:
 	Flock(const Flock& other);
