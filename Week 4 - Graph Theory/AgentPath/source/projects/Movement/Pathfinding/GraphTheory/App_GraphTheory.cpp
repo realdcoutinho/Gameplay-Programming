@@ -7,6 +7,8 @@
 
 using namespace Elite;
 using namespace std;
+
+
 //Destructor
 App_GraphTheory::~App_GraphTheory()
 {
@@ -85,15 +87,23 @@ void App_GraphTheory::Update(float deltaTime)
 	auto eulerFinder = EulerianPath<GraphNode2D, GraphConnection2D>(m_pGraph2D);
 	Eulerianity eulerianity;
 	eulerianity = eulerFinder.IsEulerian();
+
+
+	
+	
+
+
 	switch (eulerianity) {
 	case Eulerianity::notEulerian:
-		std::cout << "Not Eulerian" << std::endl;
+		//std::cout << "Not Eulerian" << std::endl;
 		break;
 	case Eulerianity::semiEulerian:
-		std::cout << "Semi Eulerian" << std::endl;
+		//std::cout << "Semi Eulerian" << std::endl;
+		eulerFinder.FindPath(eulerianity);
 		break;
 	case Eulerianity::eulerian:
-		std::cout << "Eulerian" << std::endl;
+		//std::cout << "Eulerian" << std::endl;
+		eulerFinder.FindPath(eulerianity);
 	default:;
 	}
 }

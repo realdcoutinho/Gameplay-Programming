@@ -95,6 +95,11 @@ namespace Elite {
 	inline int randomInt(int max = 1)
 	{ return rand() % max; }
 
+	inline int randomInt(int min, int max)
+	{
+		return min + (std::rand() % (max - min + 1));
+	}
+
 	/*! Random Float */
 	inline float randomFloat(float max = 1.f)
 	{ return max * (float(rand()) / RAND_MAX); }

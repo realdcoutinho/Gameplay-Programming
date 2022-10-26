@@ -27,6 +27,8 @@ namespace Elite
 		IGraph<T_NodeType, T_ConnectionType>* m_pGraph;
 	};
 
+
+
 	template<class T_NodeType, class T_ConnectionType>
 	inline EulerianPath<T_NodeType, T_ConnectionType>::EulerianPath(IGraph<T_NodeType, T_ConnectionType>* pGraph)
 		: m_pGraph(pGraph)
@@ -36,18 +38,16 @@ namespace Elite
 	template<class T_NodeType, class T_ConnectionType>
 	inline Eulerianity EulerianPath<T_NodeType, T_ConnectionType>::IsEulerian() const
 	{
-
 		// If the graph is not connected, there can be no Eulerian Trail
 		if (IsConnected() == false)
 			return Eulerianity::notEulerian;
 
-
 		// Count nodes with odd degree 
 		auto nodes = m_pGraph->GetAllNodes();
-		int oddCount = 0;
+		int oddCount{};
 		for (auto n : nodes)
 		{
-			auto connections = m_pGraph->GetAllConnections();
+			auto connections = m_pGraph->GetNodeConnections(n);
 			if (connections.size() & 1)
 				oddCount++;
 		}
@@ -62,11 +62,10 @@ namespace Elite
 		if (oddCount == 2 && nodes.size() != 2)
 			return Eulerianity::semiEulerian;
 
-		// A connected graph with no odd nodes is Eulerian
-		else
-			return Eulerianity::eulerian;
 
-		return Eulerianity::notEulerian; // REMOVE AFTER IMPLEMENTING
+		// A connected graph with no odd nodes is Eulerian
+
+		return Eulerianity::eulerian; // REMOVE AFTER IMPLEMENTING
 	}
 
 	template<class T_NodeType, class T_ConnectionType>
@@ -79,13 +78,93 @@ namespace Elite
 
 		// Check if there can be an Euler path
 		// If this graph is not eulerian, return the empty path
+		if (eulerianity == Eulerianity::notEulerian)
+			return path;
 		// Else we need to find a valid starting index for the algorithm
+		auto nodes = graphCopy->GetAllNodes();
+		int currentNodeIndex = 0;
+		if (eulerianity == Eulerianity::semiEulerian)
+		{
+			for (auto n : nodes)
+			{
+				auto connections = m_pGraph->GetNodeConnections(n);
+				if (connections.size() & 1)
+				{
+					currentNodeIndex = n->GetIndex();
+					break;
+				}
+			}
+		}
+		if (eulerianity == Eulerianity::eulerian)
+			currentNodeIndex = nodes[0]->GetIndex();
+
+		if (currentNodeIndex == 2)
+		{
+			currentNodeIndex;
+		}
+
+		
+		
 		
 		// Start algorithm loop
 		std::stack<int> nodeStack;
+		//std::stack<T_NodeType> nodeStack;
 
+
+		auto currentNode = graphCopy->GetNode(currentNodeIndex);
+
+
+		auto connections = graphCopy->GetNodeConnections(currentNode);
+		auto nrOfConnections = connections.size();
+
+
+		while (!(connections.size() == 0 && nodeStack.size() == 0)) //if nr of Neighbors > 0
+		{
+			if (connections.size() > 0)
+			{
+				size_t currentNodeIndex = currentNode->GetIndex();
+				nodeStack.push(currentNodeIndex); //add node to the stack
+			
+
+				//take any of its neighbors
+				auto currentConnection = graphCopy->GetNodeConnections(currentNode); 
+				auto currentNeighbor = graphCopy->GetNode(connections.front()->GetTo());
+
+				//auto connections{ graphCopy->GetNodeConnections(currentNode) };
+				//std::list<Elite::GraphConnection2D*>::iterator it = connections.begin();
+				//std::advance(it, 1);
+				//auto neighbor{ *it };
+			/*	neighbor->GetTo();*/
+
+				auto toRemoveConnection = graphCopy->GetConnection(currentNode->GetIndex(), currentNeighbor->GetIndex());
+				currentNode = currentNeighbor;
+				graphCopy->RemoveConnection(toRemoveConnection);
+				connections = graphCopy->GetNodeConnections(currentNode);
+				if (graphCopy->GetNodeConnections(currentNode).size() == 0)
+				{
+					nodeStack.push(currentNodeIndex);
+				}
+			}
+			if(connections.size() == 0)
+			{
+				path.push_back(currentNode);
+				if (nodeStack.size() > 0)
+					nodeStack.pop();
+				if (nodeStack.size() > 0)
+					currentNode = m_pGraph->GetNode(nodeStack.top());
+			}
+		}
+
+
+
+		
 
 		std::reverse(path.begin(), path.end()); // reverses order of the path
+		for (int i{0}; i < path.size(); ++i)
+		{
+			std::cout << path[i]->GetIndex();
+		}
+		std::cout << '\n';
 		return path;
 	}
 
@@ -113,6 +192,8 @@ namespace Elite
 
 
 		int connectedIdx = invalid_node_index;
+
+
 		for (auto n : nodes)	
 		{
 			if (nodes.size() > 1 && connections.size() == 0)
@@ -142,8 +223,6 @@ namespace Elite
 			if (visited[n->GetIndex()] == false)
 				return false;
 		}
-
-
 		return true;
 	}
 

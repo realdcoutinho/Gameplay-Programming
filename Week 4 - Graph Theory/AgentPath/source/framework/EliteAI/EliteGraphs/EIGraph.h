@@ -38,6 +38,11 @@ namespace Elite
 		const ConnectionList& GetNodeConnections(int idx) const;
 		const ConnectionList& GetNodeConnections(T_NodeType* pNode) const { return GetNodeConnections(pNode->GetIndex()); }
 
+	
+		T_ConnectionType* GetConnectingNodes(int idx);
+
+
+
 		int GetNextFreeNodeIndex() const { return m_NextNodeIndex; }
 		int AddNode(T_NodeType* pNode);
 		void RemoveNode(int node);
@@ -175,6 +180,14 @@ namespace Elite
 
 		return nullptr;
 	}
+
+	template<class T_NodeType, class T_ConnectionType>
+	inline T_ConnectionType* IGraph<T_NodeType, T_ConnectionType>::GetConnectingNodes(int idx)
+	{
+
+	}
+
+
 
 	template<class T_NodeType, class T_ConnectionType>
 	inline std::vector<T_NodeType*> IGraph<T_NodeType, T_ConnectionType>::GetAllNodes() const

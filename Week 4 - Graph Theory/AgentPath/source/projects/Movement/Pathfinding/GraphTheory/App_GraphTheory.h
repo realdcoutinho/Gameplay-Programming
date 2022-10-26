@@ -13,6 +13,10 @@
 #include "framework\EliteAI\EliteGraphs\EliteGraphUtilities\EGraphEditor.h"
 
 
+#include <stack>
+
+
+
 //-----------------------------------------------------------------
 // Application
 //-----------------------------------------------------------------
@@ -28,6 +32,9 @@ public:
 	void Update(float deltaTime) override;
 	void Render(float deltaTime) const override;
 
+	//mine 
+	//void PrintPath();
+
 private:
 	Elite::Graph2D<Elite::GraphNode2D, Elite::GraphConnection2D>* m_pGraph2D;
 	Elite::GraphEditor m_GraphEditor;
@@ -36,5 +43,7 @@ private:
 	//C++ make the class non-copyable
 	App_GraphTheory(const App_GraphTheory&) = delete;
 	App_GraphTheory& operator=(const App_GraphTheory&) = delete;
+
+	//mine
 };
 #endif
