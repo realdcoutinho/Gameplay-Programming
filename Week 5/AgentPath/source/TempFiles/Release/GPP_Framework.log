@@ -1,0 +1,41 @@
+﻿  stdafx.cpp
+  EGraphConnectionTypes.cpp
+  EGraphNodeTypes.cpp
+  EGraphEditor.cpp
+  EGraphRenderer.cpp
+  EGeometry2DTypes.cpp
+  EInputManager.cpp
+  EMatrix2x3.cpp
+  ERigidBodyBox2D.cpp
+  EPhysicsWorldBox2D.cpp
+  ECamera2D.cpp
+  SDLDebugRenderer2D.cpp
+  SDLFrame.cpp
+  ETimer_SDL.cpp
+  EImmediateUI.cpp
+  SDLWindow.cpp
+  gl3w.c
+  main.cpp
+  App_GraphTheory.cpp
+  App_Sandbox.cpp
+  SandboxAgent.cpp
+C:\Users\diogo\Documents\GitHub\Gameplay Programming\Week 4\AgentPath\source\projects\Movement\Sandbox\SandboxAgent.cpp(61,45): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\diogo\Documents\GitHub\Gameplay Programming\Week 4\AgentPath\source\projects\Movement\Sandbox\SandboxAgent.cpp(64,28): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  Compiling...
+  App_CombinedSteering.cpp
+  CombinedSteeringBehaviors.cpp
+  App_Flocking.cpp
+  Flock.cpp
+  FlockingSteeringBehaviors.cpp
+  SpacePartitioning.cpp
+  App_SteeringBehaviors.cpp
+  Obstacle.cpp
+  SteeringAgent.cpp
+  SteeringBehaviors.cpp
+  BaseAgent.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 2379 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  GPP_Framework.vcxproj -> C:\Users\diogo\Documents\GitHub\Gameplay Programming\Week 4\AgentPath\bin\Release\GPP_Framework.exe
+  0 File(s) copied
