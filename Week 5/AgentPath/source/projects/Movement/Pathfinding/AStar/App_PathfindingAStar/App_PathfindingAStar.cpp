@@ -29,8 +29,11 @@ void App_PathfindingAStar::Start()
 	MakeGridGraph();
 
 	//Setup default start path
-	startPathIdx = 44;
-	endPathIdx = 88;
+	//startPathIdx = 44;
+	//endPathIdx = 88;
+
+	startPathIdx = 0;
+	endPathIdx = 10;
 	CalculatePath();
 }
 
@@ -99,14 +102,14 @@ void App_PathfindingAStar::MakeGridGraph()
 	m_pGridGraph = new GridGraph<GridTerrainNode, GraphConnection>(COLUMNS, ROWS, m_SizeCell, false, false, 1.f, 1.5f);
 
 	//Setup default terrain
-	m_pGridGraph->GetNode(86)->SetTerrainType(TerrainType::Water);
-	m_pGridGraph->GetNode(66)->SetTerrainType(TerrainType::Water);
-	m_pGridGraph->GetNode(67)->SetTerrainType(TerrainType::Water);
-	m_pGridGraph->GetNode(47)->SetTerrainType(TerrainType::Water);
-	m_pGridGraph->RemoveConnectionsToAdjacentNodes(86);
-	m_pGridGraph->RemoveConnectionsToAdjacentNodes(66);
-	m_pGridGraph->RemoveConnectionsToAdjacentNodes(67);
-	m_pGridGraph->RemoveConnectionsToAdjacentNodes(47);
+	//m_pGridGraph->GetNode(86)->SetTerrainType(TerrainType::Water);
+	//m_pGridGraph->GetNode(66)->SetTerrainType(TerrainType::Water);
+	//m_pGridGraph->GetNode(67)->SetTerrainType(TerrainType::Water);
+	//m_pGridGraph->GetNode(47)->SetTerrainType(TerrainType::Water);
+	//m_pGridGraph->RemoveConnectionsToAdjacentNodes(86);
+	//m_pGridGraph->RemoveConnectionsToAdjacentNodes(66);
+	//m_pGridGraph->RemoveConnectionsToAdjacentNodes(67);
+	//m_pGridGraph->RemoveConnectionsToAdjacentNodes(47);
 }
 
 void App_PathfindingAStar::UpdateImGui()
@@ -210,6 +213,7 @@ void App_PathfindingAStar::CalculatePath()
 		auto startNode = m_pGridGraph->GetNode(startPathIdx);
 		auto endNode = m_pGridGraph->GetNode(endPathIdx);
 
+		
 		//m_vPath = pathfinder.FindPath(startNode, endNode);
 		m_vPath = pathfinderAStar.FindPath(startNode, endNode);
 

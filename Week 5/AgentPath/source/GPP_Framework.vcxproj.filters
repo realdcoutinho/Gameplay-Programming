@@ -111,6 +111,10 @@
     <ClInclude Include="framework\EliteAI\EliteNavigation\EHeuristicFunctions.h" />
     <ClInclude Include="framework\EliteAI\EliteNavigation\ENavigation.h" />
     <ClInclude Include="projects\Movement\Pathfinding\AStar\App_PathfindingAStar\App_PathfindingAStar.h" />
+    <ClInclude Include="framework\EliteNavigation\EHeuristicFunctions.h" />
+    <ClInclude Include="framework\EliteNavigation\ENavigation.h" />
+    <ClInclude Include="framework\EliteGraphs\EliteGraphAlgorithms\EBFS.h" />
+    <ClInclude Include="framework\EliteGraphs\EliteGraphAlgorithms\EAStar.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

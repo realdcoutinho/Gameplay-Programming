@@ -54,7 +54,55 @@ namespace Elite
 		std::vector<NodeRecord> closedList;
 		NodeRecord currentRecord;
 
-		openList.push(currentRecord);
+		NodeRecord startRecord;
+		startRecord.pNode = pStartNode;
+		startRecord.pConnection = nullptr;
+		startRecord.estimatedTotalCost = GetHeuristicCost(pStartNode, pGoalNode);
+		openList.push_back(startRecord);
+
+
+		while (openList.size() != 0)
+		{
+			currentRecord = *std::min_element(openList.begin(), openList.end());
+
+			if (currentRecord.pNode == pGoalNode)
+			{
+				break;
+			}
+			if (currentRecord.pNode != pGoalNode)
+			{
+				float totalCost{};
+				auto connections = m_pGraph->GetNodeConnections(currentRecord.pNode);
+				for (auto& cone : connections)
+				{
+					totalCost += cone->GetCost();
+					for (auto& closed : closedList)
+					{
+						auto node = m_pGraph->GetNode(cone->GetTo());
+						if (closed.pNode == node)
+						{
+							float cost = GetHeuristicCost(currentRecord.pNode, closed.pNode);
+						}
+					}
+					for (auto& open : openList)
+					{
+						auto node = m_pGraph->GetNode(cone->GetTo());
+						if (open.pNode == node)
+						{
+							std::cout << "YO" << '\n';
+						}
+					}
+
+
+
+
+				}
+
+			}
+		}
+
+
+		//one thing I am not understanding in the slides is that, in the early ones, you start by adding your starting Node to the closed list.you get all the neighboring nodes from the startingNodeand then add those to the open list
 
 
 
