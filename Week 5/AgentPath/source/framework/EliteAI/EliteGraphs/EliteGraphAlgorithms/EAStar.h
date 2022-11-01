@@ -71,14 +71,33 @@ namespace Elite
 			}
 			if (currentRecord.pNode != pGoalNode)
 			{
-				float totalCost{};
-				auto connections = m_pGraph->GetNodeConnections(currentRecord.pNode);
-				for (auto& cone : connections)
+				auto currentConnections = m_pGraph->GetNodeConnections(currentRecord.pNode);
+				
+				for (auto& connection : currentConnections)
 				{
-					totalCost += cone->GetCost();
+					NodeRecord existingRecord;
+					existingRecord.pNode = connection.GetTo();
+					existingRecord.pConnection = connection;
+					existingRecord.costSoFar = currentRecord.costSoFar + connection->GetCost();
+					existingRecord.estimatedTotalCost = existingRecord.costSoFar + GetHeuristicCost(existingRecord.pNode, pGoalNode);
+					//const float connectionCost{ currentRecord.costSoFar + cone->GetCost()}
+					//const float estimatedCost{ connectionCost + GetHeuristicCost(t)} //get a target node
+						
 					for (auto& closed : closedList)
 					{
-						auto node = m_pGraph->GetNode(cone->GetTo());
+						if (closed.pNode == existingRecord.pNode)
+						{	
+							if(closed.costSofar > existingRecord.costSoFar)
+							  {
+								closedList.erase(std::remove(closedList.begin(), closedList.end(), existingRecord));
+							}
+						}
+
+
+
+
+						
+						auto node = m_pGraph->GetNode(connection->GetTo());
 						if (closed.pNode == node)
 						{
 							float cost = GetHeuristicCost(currentRecord.pNode, closed.pNode);
@@ -86,7 +105,7 @@ namespace Elite
 					}
 					for (auto& open : openList)
 					{
-						auto node = m_pGraph->GetNode(cone->GetTo());
+						auto node = m_pGraph->GetNode(connection->GetTo());
 						if (open.pNode == node)
 						{
 							std::cout << "YO" << '\n';
