@@ -4,20 +4,17 @@
 // Includes & Forward Declarations
 //-----------------------------------------------------------------
 #include "framework/EliteInterfaces/EIApp.h"
-#include <vector>
 
 class AgarioFood;
 class AgarioAgent;
 class AgarioContactListener;
 class NavigationColliderElement;
 
-
-
-class App_AgarioGame_BT final : public IApp
+class App_AgarioGame_IM final : public IApp
 {
 public:
-	App_AgarioGame_BT();
-	~App_AgarioGame_BT();
+	App_AgarioGame_IM();
+	~App_AgarioGame_IM();
 
 	void Start() override;
 	void Update(float deltaTime) override;
@@ -47,12 +44,12 @@ private:
 	void UpdateImGui();
 private:
 	//C++ make the class non-copyable
-	App_AgarioGame_BT(const App_AgarioGame_BT&) {};
-	App_AgarioGame_BT& operator=(const App_AgarioGame_BT&) {};
+	App_AgarioGame_IM(const App_AgarioGame_IM&) {};
+	App_AgarioGame_IM& operator=(const App_AgarioGame_IM&) {};
 };
 
 template<class T_AgarioType>
-inline void App_AgarioGame_BT::UpdateAgarioEntities(std::vector<T_AgarioType*>& entities, float deltaTime)
+inline void App_AgarioGame_IM::UpdateAgarioEntities(std::vector<T_AgarioType*>& entities, float deltaTime)
 {
 	for (auto& e : entities)
 	{

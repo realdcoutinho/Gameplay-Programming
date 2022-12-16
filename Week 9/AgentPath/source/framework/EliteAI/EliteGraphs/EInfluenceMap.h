@@ -51,12 +51,43 @@ namespace Elite
 	{
 		// TODO: implement
 		m_TimeSinceLastPropagation += deltaTime;
-		if (m_TimeSinceLastPropagation <= m_PropagationInterval)
+		if (m_TimeSinceLastPropagation < m_PropagationInterval)
 			return;
 
 		m_TimeSinceLastPropagation = 0.0f;
 
-		
+
+		for (auto& pNode : m_Nodes)
+		{
+			
+			float sourceInfluence{};
+			auto connections = GetNodeConnections(pNode);
+			float connectionCost{};
+
+			for (auto& pConnections : connections)
+			{
+				auto nextNode = GetNode(pConnections->GetTo());
+				float nextInfluence = nextNode->GetInfluence();
+
+				if (abs(nextInfluence) > abs(sourceInfluence))
+				{
+					connectionCost = pConnections->GetCost();
+					sourceInfluence = nextInfluence;
+				}
+			}
+
+			float influence = sourceInfluence * expf(-connectionCost * m_Decay);
+
+			float newInfluence = Lerp(influence, pNode->GetInfluence(), m_Momentum);
+			m_InfluenceDoubleBuffer[(pNode->GetIndex())] = newInfluence;
+		}
+
+		for (auto& pNode : m_Nodes)
+		{
+			float influence = m_InfluenceDoubleBuffer[(pNode->GetIndex())];
+			pNode->SetInfluence(influence);
+		}
+
 
 
 	}

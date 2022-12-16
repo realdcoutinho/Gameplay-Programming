@@ -24,7 +24,7 @@ void App_InfluenceMap::Start()
 	DEBUGRENDERER2D->GetActiveCamera()->SetMoveLocked(true);
 
 	m_pInfluenceGrid = new InfluenceMap<InfluenceGrid>(false);
-	m_pInfluenceGrid->InitializeGrid(10, 10, 10, false, true);
+	m_pInfluenceGrid->InitializeGrid(20, 20, 5, false, true);
 	m_pInfluenceGrid->InitializeBuffer();
 
 	m_pInfluenceGraph2D = new InfluenceMap<InfluenceGraph>(false);
