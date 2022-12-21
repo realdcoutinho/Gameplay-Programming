@@ -11,8 +11,8 @@
 //#define ActiveApp_NavMeshGraph
 //#define ActiveApp_FSM
 //#define ActiveApp_BT
-#define ActiveApp_InfluenceMap
-//#define ActiveApp_Agario
+//#define ActiveApp_InfluenceMap
+#define ActiveApp_Agario
 
 //---------- Registered Applications -----------
 #ifdef ActiveApp_Sandbox
@@ -66,10 +66,10 @@ typedef App_AgarioGame_BT CurrentApp;
 typedef  App_InfluenceMap CurrentApp;
 #endif
 
-//#ifdef ActiveApp_Agario
-//#include "projects/DecisionMaking/InfluenceMaps/App_AgarioGame_IM.h"
-//typedef  App_AgarioGame_IM CurrentApp;
-//#endif
+#ifdef ActiveApp_Agario
+#include "projects/DecisionMaking/InfluenceMaps/App_AgarioGame_IM.h"
+typedef  App_AgarioGame_IM CurrentApp;
+#endif
 
 
 

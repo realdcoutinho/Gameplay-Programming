@@ -126,9 +126,6 @@ void App_AgarioGame_IM::Start()
 		})
 	);
 
-
-
-
 	//3. Set the BehaviorTree active on the agent 
 	m_pSmartAgent->SetDecisionMaking(pBehaviorTree);
 	m_pSmartAgent->SetRenderBehavior(true);

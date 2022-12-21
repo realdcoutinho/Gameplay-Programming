@@ -79,6 +79,8 @@ namespace Elite
 				costSoFar = currentRecord.costSoFar + connection->GetCost();
 					//solution with for loop ..... much much slower // works perfectly for the A* Path tho.
 
+
+				//bool shouldOpenList = true;
 					//for (const auto& closed : closedList)
 					//{
 					//	if (connection->GetTo() == closed.pNode->GetIndex())
@@ -149,6 +151,13 @@ namespace Elite
 			openList.erase(std::remove(openList.begin(), openList.end(), currentRecord));
 			closedList.push_back(currentRecord);
 		}
+
+		//for (const auto& open : openList)
+		//{
+		//	closedList.push_back(open);
+		//}
+
+
 
 		while (currentRecord.pNode != pStartNode)
 		{
