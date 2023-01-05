@@ -11,6 +11,9 @@ namespace Elite
 #define ZeroVector2 Vector2()
 #define UnitVector2 Vector2(1.f,1.f)
 
+
+
+
 	//Vector 2D
 	struct Vector2
 	{
@@ -133,6 +136,38 @@ namespace Elite
 		}
 	};
 
+	struct Rect
+	{
+		Rect() = default;
+		Rect(Vector2 _bottomLeft, float _width, float _height) : bottomLeft(_bottomLeft), width(_width), height(_height) {};
+
+		Vector2 bottomLeft;
+		float width;
+		float height;
+	};
+
+#pragma region Rect
+
+
+	//inline bool IsOverlapping(const Rect& a, const Rect& b)
+	//{
+	//	// If one rectangle is on left side of the other
+	//	if (a.bottomLeft.x + a.width < b.bottomLeft.x || b.bottomLeft.x + b.width < a.bottomLeft.x)
+	//	{
+	//		return false;
+	//	}
+
+	//	// If one rectangle is under the other
+	//	if (a.bottomLeft.y > b.bottomLeft.y + b.height || b.bottomLeft.y > a.bottomLeft.y + a.height)
+	//	{
+	//		return false;
+	//	}
+
+	//	return true;
+	//}
+#pragma endregion //Rect
+
+
 	//=== Global Vector Operators ===
 #pragma region GlobalVectorOperators
 	inline auto operator+(const Vector2& v, const Vector2& v2)
@@ -233,5 +268,11 @@ namespace Elite
 	}
 
 #pragma endregion //ExtraFunctions
+
+
+
+
+
+
 }
 #endif

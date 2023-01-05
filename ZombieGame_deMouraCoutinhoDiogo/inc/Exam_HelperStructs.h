@@ -12,10 +12,10 @@ struct SteeringPlugin_Output
 
 struct PluginInfo
 {
-	std::string BotName = "siuuuuuuuu";
-	std::string Student_FirstName = "Diogo";
-	std::string Student_LastName = "Coutinho";
-	std::string Student_Class = "2DAE07";
+	std::string BotName = "Minion";
+	std::string Student_FirstName = "Not Set";
+	std::string Student_LastName = "Not Set";
+	std::string Student_Class = "Not Set";
 };	
 
 struct GameDebugParams //Debuggin Purposes only (Ignored during release build)
@@ -112,6 +112,13 @@ struct HouseInfo
 	Elite::Vector2 Size;
 };
 
+struct RegisteredHouse
+{
+	Elite::Vector2 Center;
+	Elite::Vector2 Size;
+	float timeSinceVisited;
+};
+
 struct EnemyInfo
 {
 	eEnemyType Type;
@@ -176,5 +183,20 @@ struct AgentInfo
 	float MaxAngularSpeed;
 	float GrabRange;
 	float AgentSize;
+
+	/*bool ItemInRange(const EntityInfo& e, const AgentInfo& agent)
+	{
+		if ((e.Location.x - agent.Position.x) * (e.Location.x - agent.Position.x) +
+			(e.Location.y - agent.Position.y) * (e.Location.y - agent.Position.y) <= agent.GrabRange * agent.GrabRange)
+			return true;
+		else
+			return false;
+	}*/
+
 };
+
+//struct AgentInfo_Extended : AgentInfo
+//{
+//
+//};
 #pragma endregion

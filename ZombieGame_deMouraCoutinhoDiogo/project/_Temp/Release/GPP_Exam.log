@@ -1,7 +1,6 @@
-﻿  stdafx.cpp
-  Plugin.cpp
+﻿  Plugin.cpp
   GPP_PluginBase.lib(IBaseInterface.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
      Creating library _Temp\Release\GPP_Plugin.lib and object _Temp\Release\GPP_Plugin.exp
   Generating code
   Finished generating code
-  GPP_Exam.vcxproj -> C:\Users\diogo\Downloads\GPP_Exam\GPP_Exam\ZombieGame\_DEMO_RELEASE\GPP_Plugin.dll
+  GPP_Exam.vcxproj -> C:\Users\diogo\Documents\GitHub\Gameplay Programming\ZombieGame_deMouraCoutinhoDiogo\_DEMO_RELEASE\GPP_Plugin.dll
