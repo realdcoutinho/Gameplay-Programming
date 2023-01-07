@@ -7,6 +7,7 @@
 #include "Agent.h"
 #include "EBehaviorTree.h"
 #include "Behaviors.h"
+#include "Inventory.h"
 
 using namespace std;
 using namespace Elite;
@@ -28,57 +29,58 @@ void Plugin::Initialize(IBaseInterface* pInterface, PluginInfo& info)
 	info.Student_Class = "2DAE08";
 
 	m_pBlackBoard = CreateAgentBlackBoard(m_pAgent);
-
-	//m_pBehaviorTree = new BehaviorTree(m_pBlackBoard,
-	//	new BehaviorSelector(
-	//		{
-	//			new BehaviorSequence(
-	//			{
-	//				new BehaviorConditional(BT_Conditions::IsItemNearby),
-	//				new BehaviorAction(BT_Actions::GrabItem)
-	//			}),
-	//			new BehaviorAction(BT_Actions::ChangeToWander)
-	//		}));
+	CreateBehaviorTree();
 
 
-	m_pBehaviorTree = new BehaviorTree(m_pBlackBoard,
-		new BehaviorSelector(
-			{
-				new BehaviorSequence(
-				{
-					new BehaviorConditional(BT_Conditions::IsItemNearby),
-					new BehaviorAction(BT_Actions::GrabItem)
-				}),
-				//new BehaviorAction(BT_Actions::ChangeToWander)
-			}));
-		
-		
-		
-		
 
-		
-		
-		
-		
 
-	
-	std::cout << "Hello" << '\n';
-	//m_pAgent->SetDecisionMaking(m_pBehaviorTree);
+	//for (int nr{ 0 }; nr < 10; ++nr)
+	//{
+	//	Vector2 toEplore;
+	//	
+	//}
+
+
 }
 
 Blackboard* Plugin::CreateAgentBlackBoard(Agent* pAgent)
 {
 	Blackboard* pBlackboard = new Blackboard();
+
+	//agent realted stuff
 	pBlackboard->AddData("Agent", m_pAgent);
-	pBlackboard->AddData("pInterface", m_pInterface);
-	pBlackboard->AddData("WorldInfo", m_pInterface->World_GetInfo());
 	pBlackboard->AddData("AgentInfo", m_pInterface->Agent_GetInfo());
+	//pBlackboard->AddData("RegisterHouses", m_pAgent->GetRegisteredHouses());
+	//pBlackboard->AddData("SearchedHouses", m_pAgent->GetSearchedHouses());
+
+	VisitedHouse* phouse{ nullptr };
+	pBlackboard->AddData("TargetHouse", phouse);
+
+	//inventory
+	pBlackboard->AddData("Inventory", m_pAgent->GetInventory());
+
+	//INTERFACE
+	pBlackboard->AddData("pInterface", m_pInterface);
+
+	//bool for which gun to use
+	bool multipleEnemies{ false };
+	pBlackboard->AddData("MultipleEnemies", multipleEnemies);
+
+	//INFO
+	pBlackboard->AddData("WorldInfo", m_pInterface->World_GetInfo());
 	pBlackboard->AddData("HousesFOV", m_HousesFOV);
 	pBlackboard->AddData("EnemiesFOV", m_EnemiesFOV);
 	pBlackboard->AddData("ItemsFOV", m_ItemsFOV);
-	pBlackboard->AddData("RegisteredHouses", m_pAgent->GetRegisteredHouses());
+
+	//Steerings
 	pBlackboard->AddData("SteeringOutput", m_pSteeringOutput);
 	pBlackboard->AddData("LookAt", Vector2{});
+	pBlackboard->AddData("Seek", Vector2{});
+	pBlackboard->AddData("Face", Vector2{});
+
+	//Stats
+	pBlackboard->AddData("MinimumHealth", m_pAgent->GetMinimumHealth());
+	pBlackboard->AddData("MinimumEnergy", m_pAgent->GetMinimumEnergy());
 
 	return pBlackboard;
 }
@@ -91,13 +93,18 @@ void Plugin::UpdateBlackBoard()
 	m_ItemsFOV.clear();
 	GetHousesInFOV();
 	GetEntitiesInFOV();
+
+	//INTERFACE
 	m_pBlackBoard->ChangeData("pInterface", m_pInterface);
+	//INFO
 	m_pBlackBoard->ChangeData("AgentInfo", m_pInterface->Agent_GetInfo());
 	m_pBlackBoard->ChangeData("HousesFOV", m_HousesFOV);
 	m_pBlackBoard->ChangeData("EnemiesFOV", m_EnemiesFOV);
 	m_pBlackBoard->ChangeData("ItemsFOV", m_ItemsFOV);
+	
+	//STEERING
 	m_pBlackBoard->ChangeData("SteeringOutput", m_pSteeringOutput);
-	m_pBlackBoard->ChangeData("LookAt", m_Target);
+
 }
 
 
@@ -118,8 +125,8 @@ void Plugin::InitGameDebugParams(GameDebugParams& params)
 {
 	params.AutoFollowCam = true; //Automatically follow the AI? (Default = true)
 	params.RenderUI = true; //Render the IMGUI Panel? (Default = true)
-	params.SpawnEnemies = false; //Do you want to spawn enemies? (Default = true)
-	params.EnemyCount = 20; //How many enemies? (Default = 20)
+	params.SpawnEnemies = true; //Do you want to spawn enemies? (Default = true)
+	params.EnemyCount = 100; //How many enemies? (Default = 20)
 	params.GodMode = false; //GodMode > You can't die, can be useful to inspect certain behaviors (Default = false)
 	params.LevelFile = "GameLevel.gppl";
 	params.AutoGrabClosestItem = true; //A call to Item_Grab(...) returns the closest item that can be grabbed. (EntityInfo argument is ignored)
@@ -206,6 +213,7 @@ SteeringPlugin_Output Plugin::UpdateSteering(float dt)
 	m_pSteeringOutput = SteeringPlugin_Output();
 
 	auto steering = SteeringPlugin_Output();
+	//steering.AutoOrient = false;
 	
 	
 	//Use the Interface (IAssignmentInterface) to 'interface' with the AI_Framework
@@ -305,37 +313,6 @@ SteeringPlugin_Output Plugin::UpdateSteering(float dt)
 	steering.AutoOrient = true; //Setting AutoOrient to TRue overrides the AngularVelocity
 
 	steering.RunMode = m_CanRun; //If RunMode is True > MaxLinSpd is increased for a limited time (till your stamina runs out)
-
-	//SteeringPlugin_Output is works the exact same way a SteeringBehaviour output
-
-	//steering.LinearVelocity = { -20.0f, 10.0f };
-
-	//Elite::Vector2 target = CalculateWander(steering, agentInfo);
-	//m_Steering->Wander(steering, agentInfo);
-
-
-	////steering.LinearVelocity = target - agentInfo.Position; //Desired Velocity
-	////steering.LinearVelocity = { 0, 0 }; //Desired Velocity
-
-	//steering.LinearVelocity.Normalize(); //Normalize Desired Velocity
-	//steering.LinearVelocity *= agentInfo.MaxLinearSpeed; //Rescale to Max Speed
-
-	//Vector2 pos = agentInfo.Position;
-
-	//std::cout << steering.LinearVelocity.x << " " << steering.LinearVelocity.y << '\n';
-
-	//if (agentInfo.Position.x > 400)
-	//	agentInfo.Position.x = -400;
-	//else if (agentInfo.Position.x < -400)
-	//	agentInfo.Position.x =400;
-
-	//if (agentInfo.Position.y > 400)
-	//	agentInfo.Position.y = -400;
-	//else if (agentInfo.Position.y < -400)
-	//	agentInfo.Position.y = 400;
-
-	///m_pInterface->Draw_SolidCircle(agentInfo.Position + steering.LinearVelocity, 1.0f, {0,0}, {1, 0, 0});
-
 	
 
 //@End (Demo Purposes)
@@ -344,13 +321,11 @@ SteeringPlugin_Output Plugin::UpdateSteering(float dt)
 	m_RemoveItem = false;
 
 	UpdateBlackBoard();
-	m_pAgent->Update(m_pInterface);
+	m_pAgent->Update(dt, m_pInterface);
 	m_pBehaviorTree->Update(dt);
 
-	//m_pBlackBoard->GetData("SteeringOutput", steering);
 
-	return steering;
-	
+	m_pBlackBoard->GetData("SteeringOutput", steering);	
 	return steering;
 }
 
@@ -358,6 +333,15 @@ SteeringPlugin_Output Plugin::UpdateSteering(float dt)
 //This function should only be used for rendering debug elements
 void Plugin::Render(float dt) const
 {
+	Vector2 aCenter = m_pInterface->Agent_GetInfo().Position;
+
+	Vector2 Orientation = OrientationToVector(m_pInterface->Agent_GetInfo().Orientation);
+	Vector2 aDirection = m_pInterface->Agent_GetInfo().LinearVelocity;
+	float shootingRange = m_pInterface->Agent_GetInfo().FOV_Range;
+	Vector2 shot = aDirection * shootingRange;
+
+	m_pInterface->Draw_Segment(aCenter, shot, { 1, 0,0 });
+
 	//This Render function should only contain calls to Interface->Draw_... functions
 	m_pInterface->Draw_SolidCircle(m_Target, .7f, { 0,0 }, { 1, 0, 0 });
 }
@@ -373,7 +357,7 @@ vector<HouseInfo> Plugin::GetHousesInFOV()
 		{
 			m_HousesFOV.push_back(hi);
 			vHousesInFOV.push_back(hi);
-			m_pAgent->AddHouse(hi);
+			//m_pAgent->AddHouse(hi);
 			continue;
 		}
 
@@ -408,4 +392,125 @@ vector<EntityInfo> Plugin::GetEntitiesInFOV()
 	}
 
 	return vEntitiesInFOV;
+}
+
+
+
+
+
+
+void Plugin::CreateBehaviorTree()
+{
+	m_pBehaviorTree = new BehaviorTree(m_pBlackBoard,
+		new BehaviorSelector(
+			{
+				new BehaviorSequence(
+				{
+					new BehaviorConditional(BT_Conditions::IsItemEmpty),
+					new BehaviorAction(BT_Actions::RemoveEmpty)
+				}),
+
+				new BehaviorSequence(
+				{
+						new BehaviorConditional(BT_Conditions::IsEnemyNearBy),
+						new BehaviorConditional(BT_Conditions::HasGun),
+						new BehaviorAction(BT_Actions::ChangeToFace),
+						new BehaviorSelector
+						({
+							new BehaviorSequence
+							({
+									new BehaviorConditional(BT_Conditions::EnemyInSight),
+									new BehaviorAction(BT_Actions::ShootEnemy),
+							}),
+							new BehaviorAction(BT_Actions::FAKE),
+						}),
+				}),
+
+
+		/*		new BehaviorSequence(
+				{
+						new BehaviorConditional(BT_Conditions::IsEnemyNearBy),
+						new BehaviorSequence(
+						{
+								new BehaviorConditional(BT_Conditions::HasGun),
+								new BehaviorAction(BT_Actions::ChangeToFace),
+									new BehaviorSequence(
+									{
+										new BehaviorConditional(BT_Conditions::EnemyInSight),
+										new BehaviorAction(BT_Actions::ShootEnemy)
+									}),
+						}),
+				}),*/
+
+				new BehaviorSequence(
+				{
+					new BehaviorConditional(BT_Conditions::IsItemNearby),
+					new BehaviorAction(BT_Actions::ChangeToSeek),
+					new BehaviorAction(BT_Actions::AddItem)
+				}),
+
+				new BehaviorSequence(
+				{
+						new BehaviorConditional(BT_Conditions::IsEnergLow),
+						new BehaviorAction(BT_Actions::UseFood)
+				}),
+
+				new BehaviorSequence(
+				{
+						new BehaviorConditional(BT_Conditions::IsHealthLow),
+						new BehaviorAction(BT_Actions::UseHealth)
+				}),
+
+
+				new BehaviorSequence(
+				{
+					new BehaviorConditional(BT_Conditions::NeedsVisiting),
+					new BehaviorAction(BT_Actions::ChangeToSeek),
+					new BehaviorConditional(BT_Conditions::IsInsideHouse)
+				}),
+
+
+
+
+//				new BehaviorSequence(
+//				{
+//						new BehaviorSequence(
+//						{
+//								new BehaviorConditional(BT_Conditions::IsEnemyNearBy),
+//									new BehaviorSelector(
+//										{
+//											new BehaviorSequence(
+//											{
+//													new BehaviorSequence(
+//													{
+//														new BehaviorConditional(BT_Conditions::HasPistol),
+//														new BehaviorAction(BT_Actions::ChangeToFace)
+//													}),
+//
+//													new BehaviorConditional(BT_Conditions::EnemyInSight),
+//													new BehaviorAction(BT_Actions::ShootEnemy)
+//											}),
+///*											new BehaviorSequence(
+//											{
+//													new BehaviorConditional(BT_Conditions::EnemyInSight),
+//													new BehaviorAction(BT_Actions::ShootEnemy)
+//											}),	*/	
+//										}),
+//										new BehaviorAction(BT_Actions::ChangeToFlee),
+//						}),
+//				}),
+				new BehaviorSequence(
+				{
+					new BehaviorConditional(BT_Conditions::IsHouseSeen),
+					new BehaviorAction(BT_Actions::AddHouse)
+				}),
+
+				new BehaviorSequence(
+				{
+					new BehaviorConditional(BT_Conditions::Explore),
+					new BehaviorAction(BT_Actions::ChangeToSeek),
+					new BehaviorConditional(BT_Conditions::IsAtPoint),
+				}),
+				//new BehaviorAction(BT_Actions::ChangeToWander)
+			}));
 }

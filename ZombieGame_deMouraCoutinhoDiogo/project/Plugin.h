@@ -10,6 +10,7 @@ class Blackboard;
 class Agent;
 class BehaviorTree;
 class IDecisionMaking;
+class Inventory;
 
 using namespace std;
 
@@ -33,8 +34,6 @@ private:
 
 	//Interface, used to request data from/perform actions with the AI Framework
 	IExamInterface* m_pInterface = nullptr;
-	//std::vector<HouseInfo> GetHousesInFOV() const;
-	//std::vector<EntityInfo> GetEntitiesInFOV() const;
 
 	std::vector<HouseInfo> GetHousesInFOV();
 	std::vector<EntityInfo> GetEntitiesInFOV();
@@ -58,17 +57,12 @@ private:
 	SteeringPlugin_Output m_pSteeringOutput;
 
 	Blackboard* CreateAgentBlackBoard(Agent* pAgent);
+	void CreateBehaviorTree();
 	void UpdateBlackBoard();
 
 	vector<HouseInfo> m_HousesFOV;
 	vector<EntityInfo> m_EnemiesFOV;
 	vector<EntityInfo> m_ItemsFOV;
-
-
-	vector<HouseInfo> m_Houses;
-
-	vector<int> m_int;
-
 };
 
 //ENTRY

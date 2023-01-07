@@ -1,6 +1,13 @@
 #pragma once
 #pragma region MISC
 #include <string>
+#include <vector>
+#include <iostream>
+
+using namespace std;
+
+
+
 
 struct SteeringPlugin_Output
 {
@@ -183,20 +190,8 @@ struct AgentInfo
 	float MaxAngularSpeed;
 	float GrabRange;
 	float AgentSize;
-
-	/*bool ItemInRange(const EntityInfo& e, const AgentInfo& agent)
-	{
-		if ((e.Location.x - agent.Position.x) * (e.Location.x - agent.Position.x) +
-			(e.Location.y - agent.Position.y) * (e.Location.y - agent.Position.y) <= agent.GrabRange * agent.GrabRange)
-			return true;
-		else
-			return false;
-	}*/
-
 };
 
-//struct AgentInfo_Extended : AgentInfo
-//{
-//
-//};
+
+
 #pragma endregion

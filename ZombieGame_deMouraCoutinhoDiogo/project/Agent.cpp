@@ -3,7 +3,8 @@
 #include "Agent.h"
 #include "BlackBoard.h"
 #include "IExamInterface.h"
-
+#include "SteeringBehaviors.h"
+#include "Inventory.h"
 
 #include <iostream>
 
@@ -11,148 +12,138 @@ using namespace std;
 using namespace Elite;
 
 Agent::Agent(IExamInterface* pInterface)
-	: m_pInterface{pInterface}
+	: m_pInterface{pInterface},
+	m_Agent{ pInterface->Agent_GetInfo() },
+	m_MinimumEnergy{4.0f},
+	m_MinimumHealth{7.0f}
 {
 	std::cout << "agent class created" << '\n';
 	
 	m_Agent = m_pInterface->Agent_GetInfo();
-	m_Radius = m_Agent.GrabRange;
-	m_MaxAngleChange = m_Agent.FOV_Angle;
+
+	//Create Steering Behaviours
+	InitializeSteeringBehaviors();
+	CreateExplorePoints();
+	m_Invetory = new Inventory();
 }
 
-Agent::~Agent() 
+void Agent::CreateExplorePoints()
+{
+	float nrOfPoints{ 10 };
+	float radius{ 225.0f };
+	float intervals{ 3.14f * 2 / nrOfPoints };
+
+	for (int nr{ 0 }; nr < nrOfPoints; ++nr)
+	{
+		//Vector2 angle{ cosf(intervals + i * intervals/2)}
+		Vector2 angle{ cosf(intervals * nr), sinf(intervals * nr) };
+		Vector2 point = angle * radius;
+		m_PointsToExplore.push_back(point);
+	}
+
+}
+
+vector<Vector2>& Agent::GetExplorationPoints()
+{
+	return m_PointsToExplore;
+}
+
+Agent::~Agent()
 {
 	delete m_pInterface;
+	delete m_Invetory;
+	delete m_pWander;
+	delete m_pSeek;
+	delete m_pFace;
+	delete m_pFlee;
 }
 
-void Agent::SetDecisionMaking(BehaviorTree* decisionMakingStructure)
+#pragma region Steering
+void Agent::InitializeSteeringBehaviors()
 {
-	m_pDecisionMaking = decisionMakingStructure;
+	m_pWander = new Wander();
+	m_pSeek = new Seek();
+	m_pFace = new Face();
+	m_pFlee = new Flee();
 }
 
-Vector2 Agent::GetSeekPoint() 
-{
-	return {};
-}
-
+//WANDER
 void Agent::SetWander(SteeringPlugin_Output& steering)
 {
-	steering.AutoOrient = true;
-	//float maxLinearSpeed = m_pInterface->Agent_GetInfo().MaxLinearSpeed;
-	Vector2 circleCenter{ m_pInterface->Agent_GetInfo().Position + m_pInterface->Agent_GetInfo().LinearVelocity * m_OffsetDistance }; //gets agents position. multiples the direction vector by the offset distance and adds it.
-
-	float randomAngle{ -m_MaxAngleChange + (std::rand() % static_cast<int>(m_MaxAngleChange - (-m_MaxAngleChange) + 1)) }; //creates a radon float between -m_MaxAngleChange and m_MaxAngleChange
-	m_WanderAngle += randomAngle; //Sets a new wander angle
-	Vector2 randomPoint{ cosf(m_WanderAngle), sinf(m_WanderAngle) }; //cxreates a new point on a unit circle based on the values by the random angle added to the m_WanderAngle
-	randomPoint *= m_Radius; // multiplies those same points by the radius, placing them on a circle of the same size
-	randomPoint += circleCenter; // adds the CircleCenter Vector to it, making the random point be place within the limits of the circle it self in from of the agent
-
-	auto target = m_pInterface->NavMesh_GetClosestPathPoint(randomPoint); //sets the random point as the new target
-
-	steering.LinearVelocity = target - m_pInterface->Agent_GetInfo().Position; //Desired Velocity
-	//steering.LinearVelocity.Normalize(); //Normalize Desired Velocity
-
-	//steering.LinearVelocity = target;/* * m_pInterface->Agent_GetInfo().MaxLinearSpeed;*/ //Desired Velocity
-	steering.LinearVelocity.Normalize(); //Normalize Desired Velocity
-	//steering.LinearVelocity *= m_pInterface->Agent_GetInfo().MaxLinearSpeed;
-	//steering.LinearVelocity;
+	m_pWander->CalculateSteering(steering, this, m_pInterface);
 }
 
-void Agent::SetFace(SteeringPlugin_Output& steering, EntityInfo& enemy)
+//SEEK
+Vector2 Agent::GetSeekPoint() const
 {
-	//SteeringOutput steering = {};
-	steering.AngularVelocity = 0;
-	steering.AutoOrient = false;
-
-	Elite::Vector2 targetVector{ m_pInterface->Agent_GetInfo().Position - enemy.Location };
-	Elite::Vector2 agentDirection{ cosf(m_pInterface->Agent_GetInfo().AngularVelocity), sinf(m_pInterface->Agent_GetInfo().AngularVelocity) };
-
-	//different method
-	float angle{ acosf(Elite::Dot(agentDirection, targetVector) / (agentDirection.Magnitude() * targetVector.Magnitude())) };
-	Elite::Vector3 targetVectorZ{ enemy.Location - m_pInterface->Agent_GetInfo().Position };
-	Elite::Vector3 agentDirectionZ{ cosf(m_pInterface->Agent_GetInfo().AngularVelocity), sinf(m_pInterface->Agent_GetInfo().AngularVelocity), 0.0f };
-	Elite::Vector3 crossZCheck{ Elite::Cross(targetVectorZ, agentDirectionZ) };
-	if (crossZCheck.z < 0)
-		angle = -angle;
-	float haltAngle{ static_cast<float>(Elite::ToRadians(0.005f)) };
-
-
-
-	//pAgent->SetAutoOrient(false);
-	if (haltAngle <= angle)
-	{
-		steering.AngularVelocity = -m_MaxAngularSpeed;
-	}
-	else if (angle <= haltAngle)
-	{
-		steering.AngularVelocity = m_MaxAngularSpeed;
-	}
-	if (-haltAngle <= angle && angle <= haltAngle)
-	{
-		steering.AngularVelocity = 0;
-	}
-	steering.AngularVelocity *= abs(angle);
+	return m_SeekPoint;
 }
-
-void Agent::SetFace(SteeringPlugin_Output& steering, Vector2& point)
+//SEEK
+void Agent::SetSeek(SteeringPlugin_Output& steering)
 {
-	steering.AngularVelocity = 0;
-	steering.AutoOrient = false;
-
-	Elite::Vector2 targetVector{ m_pInterface->Agent_GetInfo().Position - point };
-	Elite::Vector2 agentDirection{ cosf(m_pInterface->Agent_GetInfo().AngularVelocity), sinf(m_pInterface->Agent_GetInfo().AngularVelocity) };
-
-	//different method
-	float angle{ acosf(Elite::Dot(agentDirection, targetVector) / (agentDirection.Magnitude() * targetVector.Magnitude())) };
-	Elite::Vector3 targetVectorZ{ point - m_pInterface->Agent_GetInfo().Position };
-	Elite::Vector3 agentDirectionZ{ cosf(m_pInterface->Agent_GetInfo().AngularVelocity), sinf(m_pInterface->Agent_GetInfo().AngularVelocity), 0.0f };
-	Elite::Vector3 crossZCheck{ Elite::Cross(targetVectorZ, agentDirectionZ) };
-	if (crossZCheck.z < 0)
-		angle = -angle;
-	float haltAngle{ static_cast<float>(Elite::ToRadians(0.005f)) };
-
-
-
-	//pAgent->SetAutoOrient(false);
-	if (haltAngle <= angle)
-	{
-		steering.AngularVelocity = -m_MaxAngularSpeed;
-	}
-	else if (angle <= haltAngle)
-	{
-		steering.AngularVelocity = m_MaxAngularSpeed;
-	}
-	if (-haltAngle <= angle && angle <= haltAngle)
-	{
-		steering.AngularVelocity = 0;
-	}
-	steering.AngularVelocity *= abs(angle);
+	m_pSeek->CalculateSteering(steering, this, m_pInterface);
+}
+//SEEK
+void Agent::SetSeekPoint(Vector2& seekPoint)
+{
+	m_SeekPoint = seekPoint;
 }
 
+//FACE
+Vector2 Agent::GetEnemyPosition() const
+{
+	return m_EnemyPosition;
+}
+//FACE
+void Agent::SetEnemyPosition(Vector2& position)
+{
+	m_EnemyPosition = position;
+}
+//FACE
+void Agent::SetFace(SteeringPlugin_Output& steering)
+{
+	m_pFace->CalculateSteering(steering, this, m_pInterface);
+}
+//FLEE
+void Agent::SetFlee(SteeringPlugin_Output& steering)
+{
+	m_pFlee->CalculateSteering(steering, this, m_pInterface);
+}
 
-vector<HouseInfo> Agent::GetRegisteredHouses() const
+#pragma endregion
+
+Inventory* Agent::GetInventory() const
+{
+	return m_Invetory;
+}
+
+vector<VisitedHouse>& Agent::GetRegisteredHouses() 
 {
 	return m_RegisteredHouses;
 }
 
-void Agent::Update(IExamInterface* pInterface)
+void Agent::RegisterHouse(HouseInfo& rHouse)
+{
+	m_RegisteredHouses.push_back(VisitedHouse(rHouse));
+}
+
+void Agent::Update(float dt, IExamInterface* pInterface)
 {
 	m_Agent = pInterface->Agent_GetInfo();
 	m_Agent.Position;
-	//if (!m_pDecisionMaking)
-	//{
-	//	std::cout << "NULL" << '\n';
-	//}
+
+	for (auto& house : m_RegisteredHouses)
+	{
+		house.Update(dt);
+	}
 }
 
-void Agent::AddHouse(const HouseInfo& houseSeen)
+float Agent::GetMinimumHealth()
 {
-	auto houseExists = [&houseSeen](const HouseInfo& houseRecorded) { return houseSeen.Center == houseRecorded.Center; };
-	auto house = std::find_if(m_RegisteredHouses.begin(), m_RegisteredHouses.end(), houseExists);
+	return m_MinimumHealth;
+}
 
-	if (house == std::end(m_RegisteredHouses))
-	{
-		m_RegisteredHouses.push_back(houseSeen);
-		++nrKnownHouses;
-	}
+float Agent::GetMinimumEnergy()
+{
+	return m_MinimumEnergy;
 }
