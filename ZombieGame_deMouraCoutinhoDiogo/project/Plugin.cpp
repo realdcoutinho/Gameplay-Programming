@@ -23,24 +23,13 @@ void Plugin::Initialize(IBaseInterface* pInterface, PluginInfo& info)
 
 	//Bit information about the plugin
 	//Please fill this in!!
-	info.BotName = "Siuuuu";
+	info.BotName = "CRisTaRonaldo...SUUUIIIII";
 	info.Student_FirstName = "Diogo";
 	info.Student_LastName = "Coutinho";
 	info.Student_Class = "2DAE08";
 
 	m_pBlackBoard = CreateAgentBlackBoard(m_pAgent);
 	CreateBehaviorTree();
-
-
-
-
-	//for (int nr{ 0 }; nr < 10; ++nr)
-	//{
-	//	Vector2 toEplore;
-	//	
-	//}
-
-
 }
 
 Blackboard* Plugin::CreateAgentBlackBoard(Agent* pAgent)
@@ -50,63 +39,49 @@ Blackboard* Plugin::CreateAgentBlackBoard(Agent* pAgent)
 	//agent realted stuff
 	pBlackboard->AddData("Agent", m_pAgent);
 	pBlackboard->AddData("AgentInfo", m_pInterface->Agent_GetInfo());
-	//pBlackboard->AddData("RegisterHouses", m_pAgent->GetRegisteredHouses());
-	//pBlackboard->AddData("SearchedHouses", m_pAgent->GetSearchedHouses());
+
 
 	VisitedHouse* phouse{ nullptr };
 	pBlackboard->AddData("TargetHouse", phouse);
-
-	//inventory
-	pBlackboard->AddData("Inventory", m_pAgent->GetInventory());
-
-	//INTERFACE
-	pBlackboard->AddData("pInterface", m_pInterface);
 
 	//bool for which gun to use
 	bool multipleEnemies{ false };
 	pBlackboard->AddData("MultipleEnemies", multipleEnemies);
 
 	//INFO
+	PurgeZoneInfo PurgeInfo;
 	pBlackboard->AddData("WorldInfo", m_pInterface->World_GetInfo());
 	pBlackboard->AddData("HousesFOV", m_HousesFOV);
 	pBlackboard->AddData("EnemiesFOV", m_EnemiesFOV);
 	pBlackboard->AddData("ItemsFOV", m_ItemsFOV);
 
+	bool inPurge{ false };
+	float radius{ 0 };
+	pBlackboard->AddData("PurgeFOV", m_PurgeFOV);
+	pBlackboard->AddData("PurgeInfo", PurgeInfo);
+	pBlackboard->AddData("PurgeRadius", radius);
+	pBlackboard->AddData("InPurge", inPurge);
+	pBlackboard->AddData("PurgeCenter", Vector2{0, 0});
+	vector<Vector2> purgePoints;
+	pBlackboard->AddData("PurgePoints", purgePoints);
+
 	//Steerings
 	pBlackboard->AddData("SteeringOutput", m_pSteeringOutput);
-	pBlackboard->AddData("LookAt", Vector2{});
-	pBlackboard->AddData("Seek", Vector2{});
 	pBlackboard->AddData("Face", Vector2{});
 
-	//Stats
-	pBlackboard->AddData("MinimumHealth", m_pAgent->GetMinimumHealth());
-	pBlackboard->AddData("MinimumEnergy", m_pAgent->GetMinimumEnergy());
+	//
+	bool bitten{ false };
+	float deltat{0};
+	float rotationTime{ 5.0f };
+	pBlackboard->AddData("BittenAgent", bitten);
+	pBlackboard->AddData("BittenMine", bitten);
+	pBlackboard->AddData("TimeBitten", deltat);
+	pBlackboard->AddData("RotattionTime", rotationTime);
+
+
 
 	return pBlackboard;
 }
-
-
-void Plugin::UpdateBlackBoard()
-{	
-	m_HousesFOV.clear();
-	m_EnemiesFOV.clear();
-	m_ItemsFOV.clear();
-	GetHousesInFOV();
-	GetEntitiesInFOV();
-
-	//INTERFACE
-	m_pBlackBoard->ChangeData("pInterface", m_pInterface);
-	//INFO
-	m_pBlackBoard->ChangeData("AgentInfo", m_pInterface->Agent_GetInfo());
-	m_pBlackBoard->ChangeData("HousesFOV", m_HousesFOV);
-	m_pBlackBoard->ChangeData("EnemiesFOV", m_EnemiesFOV);
-	m_pBlackBoard->ChangeData("ItemsFOV", m_ItemsFOV);
-	
-	//STEERING
-	m_pBlackBoard->ChangeData("SteeringOutput", m_pSteeringOutput);
-
-}
-
 
 //Called only once
 void Plugin::DllInit()
@@ -126,18 +101,20 @@ void Plugin::InitGameDebugParams(GameDebugParams& params)
 	params.AutoFollowCam = true; //Automatically follow the AI? (Default = true)
 	params.RenderUI = true; //Render the IMGUI Panel? (Default = true)
 	params.SpawnEnemies = true; //Do you want to spawn enemies? (Default = true)
-	params.EnemyCount = 100; //How many enemies? (Default = 20)
+	params.EnemyCount = 20; //How many enemies? (Default = 20)
 	params.GodMode = false; //GodMode > You can't die, can be useful to inspect certain behaviors (Default = false)
 	params.LevelFile = "GameLevel.gppl";
 	params.AutoGrabClosestItem = true; //A call to Item_Grab(...) returns the closest item that can be grabbed. (EntityInfo argument is ignored)
 	params.StartingDifficultyStage = 1;
-	params.InfiniteStamina = false;
-	params.SpawnDebugPistol = true;
-	params.SpawnDebugShotgun = true;
+	params.InfiniteStamina = true;
+	params.SpawnDebugPistol = false;
+	params.SpawnDebugShotgun = false;
 	params.SpawnPurgeZonesOnMiddleClick = true;
 	params.PrintDebugMessages = true;
 	params.ShowDebugItemNames = true;
-	params.Seed = 36;
+	params.Seed = 1003;
+
+	params.SpawnZombieOnRightClick = true;
 }
 
 
@@ -208,96 +185,10 @@ void Plugin::Update(float dt)
 //This function calculates the new SteeringOutput, called once per frame
 SteeringPlugin_Output Plugin::UpdateSteering(float dt)
 {
-	auto worldStats = m_pInterface->World_GetStats();
-
-	m_pSteeringOutput = SteeringPlugin_Output();
-
 	auto steering = SteeringPlugin_Output();
-	//steering.AutoOrient = false;
-	
-	
-	//Use the Interface (IAssignmentInterface) to 'interface' with the AI_Framework
+
 	auto agentInfo = m_pInterface->Agent_GetInfo();
-
-	auto position = agentInfo.Position;
-
-	steering.AutoOrient = true;
-
-	//Use the navmesh to calculate the next navmesh point
-	//auto nextTargetPos = m_pInterface->NavMesh_GetClosestPathPoint(checkpointLocation);
-
-	//OR, Use the mouse target
-	auto nextTargetPos = m_pInterface->NavMesh_GetClosestPathPoint(m_Target); //Uncomment this to use mouse position as guidance
-	//m_pInterface
-
-
-	//auto vHousesInFOV = GetHousesInFOV();//uses m_pInterface->Fov_GetHouseByIndex(...)
-	//auto vEntitiesInFOV = GetEntitiesInFOV(); //uses m_pInterface->Fov_GetEntityByIndex(...)
-
-	//UINT maxCapacity = m_pInterface->Inventory_GetCapacity();
-
-	//for (auto& e : vEntitiesInFOV)
-	//{
-	//	if (e.Type == eEntityType::PURGEZONE)
-	//	{
-	//		PurgeZoneInfo zoneInfo;
-	//		m_pInterface->PurgeZone_GetInfo(e, zoneInfo);
-	//		//std::cout << "Purge Zone in FOV:" << e.Location.x << ", "<< e.Location.y << "---Radius: "<< zoneInfo.Radius << std::endl;
-	//	}
-	//	if (e.Type == eEntityType::ITEM)
-	//	{
-	//		
-	//		ItemInfo itemInfo;
-	//		bool isIn = m_pInterface->Item_Grab(e, itemInfo);
-	//		if (isIn)
-	//		{
-	//			if (m_InventorySlot == maxCapacity)
-	//			{
-	//				--m_InventorySlot;
-	//				m_pInterface->Inventory_RemoveItem(m_InventorySlot);
-	//			}
-	//			if (m_InventorySlot < maxCapacity)
-	//			{
-	//				m_pInterface->Inventory_AddItem(m_InventorySlot, itemInfo);
-	//				//++m_InventorySlot;
-	//			}
-	//		}
-	//			
-	//		
-	//		//std::cout << " in FOV:" << e.Location.x << ", "<< e.Location.y << std::endl;
-	//	}
-
-	//}
-
-	//INVENTORY USAGE DEMO
-	//********************
-
-	if (m_GrabItem)
-	{
-		ItemInfo item;
-		//Item_Grab > When DebugParams.AutoGrabClosestItem is TRUE, the Item_Grab function returns the closest item in range
-		//Keep in mind that DebugParams are only used for debugging purposes, by default this flag is FALSE
-		//Otherwise, use GetEntitiesInFOV() to retrieve a vector of all entities in the FOV (EntityInfo)
-		//Item_Grab gives you the ItemInfo back, based on the passed EntityHash (retrieved by GetEntitiesInFOV)
-		if (m_pInterface->Item_Grab({}, item))
-		{
-			//Once grabbed, you can add it to a specific inventory slot
-			//Slot must be empty
-			m_pInterface->Inventory_AddItem(m_InventorySlot, item);
-		}
-	}
-
-	if (m_UseItem)
-	{
-		//Use an item (make sure there is an item at the given inventory slot)
-		m_pInterface->Inventory_UseItem(m_InventorySlot);
-	}
-
-	if (m_RemoveItem)
-	{
-		//Remove an item from a inventory slot
-		m_pInterface->Inventory_RemoveItem(m_InventorySlot);
-	}
+	auto nextTargetPos = m_pInterface->NavMesh_GetClosestPathPoint(m_Target);
 
 	//Simple Seek Behaviour (towards Target)
 	steering.LinearVelocity = nextTargetPos - agentInfo.Position; //Desired Velocity
@@ -313,14 +204,15 @@ SteeringPlugin_Output Plugin::UpdateSteering(float dt)
 	steering.AutoOrient = true; //Setting AutoOrient to TRue overrides the AngularVelocity
 
 	steering.RunMode = m_CanRun; //If RunMode is True > MaxLinSpd is increased for a limited time (till your stamina runs out)
-	
+
+
 
 //@End (Demo Purposes)
 	m_GrabItem = false; //Reset State
 	m_UseItem = false;
 	m_RemoveItem = false;
 
-	UpdateBlackBoard();
+	UpdateBlackBoard(dt);
 	m_pAgent->Update(dt, m_pInterface);
 	m_pBehaviorTree->Update(dt);
 
@@ -333,17 +225,46 @@ SteeringPlugin_Output Plugin::UpdateSteering(float dt)
 //This function should only be used for rendering debug elements
 void Plugin::Render(float dt) const
 {
-	Vector2 aCenter = m_pInterface->Agent_GetInfo().Position;
-
-	Vector2 Orientation = OrientationToVector(m_pInterface->Agent_GetInfo().Orientation);
-	Vector2 aDirection = m_pInterface->Agent_GetInfo().LinearVelocity;
-	float shootingRange = m_pInterface->Agent_GetInfo().FOV_Range;
-	Vector2 shot = aDirection * shootingRange;
-
-	m_pInterface->Draw_Segment(aCenter, shot, { 1, 0,0 });
+	//Vector2 aCenter = m_pInterface->Agent_GetInfo().Position;
+	//Vector2 Orientation = OrientationToVector(m_pInterface->Agent_GetInfo().Orientation);
+	//Vector2 aDirection = m_pInterface->Agent_GetInfo().LinearVelocity;
+	//float shootingRange = m_pInterface->Agent_GetInfo().FOV_Range;
+	//Vector2 shot = aDirection * shootingRange;
+	//m_pInterface->Draw_Segment(aCenter, shot, { 1, 0,0 });
 
 	//This Render function should only contain calls to Interface->Draw_... functions
 	m_pInterface->Draw_SolidCircle(m_Target, .7f, { 0,0 }, { 1, 0, 0 });
+	DrawPointsToExplore();
+	auto housesVector = m_pAgent->GetRegisteredHouses();
+	for (auto house : housesVector)
+	{
+		auto points = house.GetHousePoints();
+
+		for (auto point : points)
+		{
+			m_pInterface->Draw_SolidCircle(point, .7f, { 0,0 }, { 0, 1, 0 });
+		}
+	}
+
+	vector<Vector2> purgePoints;
+	m_pBlackBoard->GetData("PurgePoints", purgePoints);
+
+	for (auto point : purgePoints)
+	{
+		m_pInterface->Draw_SolidCircle(point, .7f, { 0,0 }, { 0, 0, 1 });
+	}
+
+}
+
+void Plugin::DrawPointsToExplore() const
+{
+	auto vector = m_pAgent->GetExplorationPoints();
+	auto size = vector.size();
+
+	for (size_t pos{ 0 }; pos < size; ++pos)
+	{
+		m_pInterface->Draw_SolidCircle(vector[pos], 2.0f, { 0,0 }, { 1, 0, 0 });
+	}
 }
 
 vector<HouseInfo> Plugin::GetHousesInFOV()
@@ -357,13 +278,11 @@ vector<HouseInfo> Plugin::GetHousesInFOV()
 		{
 			m_HousesFOV.push_back(hi);
 			vHousesInFOV.push_back(hi);
-			//m_pAgent->AddHouse(hi);
 			continue;
 		}
 
 		break;
 	}
-	//m_HousesFOV = vHousesInFOV;
 	return vHousesInFOV;
 }
 
@@ -384,19 +303,18 @@ vector<EntityInfo> Plugin::GetEntitiesInFOV()
 			{
 				m_EnemiesFOV.push_back(ei);
 			}
+			if (ei.Type == eEntityType::PURGEZONE)
+			{
+				m_PurgeFOV.push_back(ei);
+			}
 			vEntitiesInFOV.push_back(ei);
 			continue;
 		}
 
 		break;
 	}
-
 	return vEntitiesInFOV;
 }
-
-
-
-
 
 
 void Plugin::CreateBehaviorTree()
@@ -404,113 +322,283 @@ void Plugin::CreateBehaviorTree()
 	m_pBehaviorTree = new BehaviorTree(m_pBlackBoard,
 		new BehaviorSelector(
 			{
+				//////////////
+				// QUICK CHECKS WHICH WONT AFFECT THE STEERING ACTIONS OR THE SHOOTING
+				//////////////
 				new BehaviorSequence(
 				{
+					//IF ITEM IS EMPTY, REMOVE ITEM
 					new BehaviorConditional(BT_Conditions::IsItemEmpty),
 					new BehaviorAction(BT_Actions::RemoveEmpty)
 				}),
-
 				new BehaviorSequence(
 				{
-						new BehaviorConditional(BT_Conditions::IsEnemyNearBy),
-						new BehaviorConditional(BT_Conditions::HasGun),
-						new BehaviorAction(BT_Actions::ChangeToFace),
-						new BehaviorSelector
-						({
-							new BehaviorSequence
-							({
-									new BehaviorConditional(BT_Conditions::EnemyInSight),
-									new BehaviorAction(BT_Actions::ShootEnemy),
-							}),
-							new BehaviorAction(BT_Actions::FAKE),
+					//IF ENERGY LOW, USE ENERGY
+					new BehaviorConditional(BT_Conditions::IsEnergLow),
+					new BehaviorAction(BT_Actions::UseFood)
+				}),
+				new BehaviorSequence(
+				{
+					//IF HEALTH LOW, USE MEDKIT
+					new BehaviorConditional(BT_Conditions::IsHealthLow),
+					new BehaviorAction(BT_Actions::UseHealth)
+				}),
+				new BehaviorSequence(
+				{
+					//IF HOUSE SEEN, REGISTER HOUSE
+					new BehaviorConditional(BT_Conditions::IsHouseSeen),
+					new BehaviorAction(BT_Actions::AddHouse)
+				}),
+
+				//////////////
+				// ATTACKING ENEMY BEHAVIOUR // OR RUN
+				//////////////
+				new BehaviorSequence(
+				{
+						//SELECTS BETWEEN THESE BEHAVIOURS
+						new BehaviorSelector(
+						{
+									new BehaviorSequence(
+									{	
+										// IF ENEMY IN SIGHT, HAS GUN
+										// CHANGE TO FACE
+										// ENEMY IN LINE OF SIGHT, SHOOT HIM DOWN
+										new BehaviorConditional(BT_Conditions::IsEnemyNearBy),
+										new BehaviorConditional(BT_Conditions::HasGun),
+										new BehaviorAction(BT_Actions::ChangeToFace),
+										new BehaviorConditional(BT_Conditions::EnemyInSight),
+										new BehaviorAction(BT_Actions::ShootEnemy),
+									}),
+									//IF THE PREVIOUS ONE FAILS, WILL BE BECAUSE LINE OF SIGHT
+									new BehaviorSequence(
+									{
+										//SO, IF HE IS NEARBY, HAS GUN, KEEP CHANGE TO FACE
+										new BehaviorConditional(BT_Conditions::IsEnemyNearBy),
+										new BehaviorConditional(BT_Conditions::HasGun),
+										new BehaviorAction(BT_Actions::ChangeToFace),
+									}),
+						}),
+				}),
+				//////////////
+				// IF HE FINDS HIMSELF INSIDE A PURGE ZONE
+				//////////////
+				new BehaviorSelector(
+					{
+						new BehaviorSequence(
+						{
+							new BehaviorConditional(BT_Conditions::InPurge), //fill in the points
+																			//change to seek closest point
+							new BehaviorConditional(BT_Conditions::StillInPurge), //reached any of the points?
+							new BehaviorAction(BT_Actions::ChangeToSeek), //then keep seeking
+																			//if he gets to any points, move on
+						}),
+						new BehaviorSequence(
+						{
+							new BehaviorConditional(BT_Conditions::StillInPurge), //reached any of the points?
+							new BehaviorAction(BT_Actions::ChangeToSeek), //then keep seeking
+							//if he gets to any points, move on
 						}),
 				}),
 
-
-		/*		new BehaviorSequence(
-				{
-						new BehaviorConditional(BT_Conditions::IsEnemyNearBy),
-						new BehaviorSequence(
-						{
-								new BehaviorConditional(BT_Conditions::HasGun),
-								new BehaviorAction(BT_Actions::ChangeToFace),
-									new BehaviorSequence(
-									{
-										new BehaviorConditional(BT_Conditions::EnemyInSight),
-										new BehaviorAction(BT_Actions::ShootEnemy)
-									}),
-						}),
-				}),*/
-
+				//////////////
+				// HE GETS BITTEN BY ZOOMBIES
+				//////////////
 				new BehaviorSequence(
 				{
+					//if bitten and he has gun, turn 360;
+					new BehaviorConditional(BT_Conditions::PlayerBitten),
+					new BehaviorConditional(BT_Conditions::HasGun),
+					new BehaviorAction(BT_Actions::ChangeToTurn),
+				}),
+
+				//////////////
+				// SEES ITEM, SEEKS ITEM, ADDS ITEM
+				//////////////
+				new BehaviorSequence(
+				{
+					//if item is nearby, seek it and add it
 					new BehaviorConditional(BT_Conditions::IsItemNearby),
 					new BehaviorAction(BT_Actions::ChangeToSeek),
 					new BehaviorAction(BT_Actions::AddItem)
 				}),
 
+				//////////////
+				// IF HE NEEDS TO VISIT A HOUSE, CHEKS ALL SEARCH POINTS IN THE HOUSE
+				// SEEKS THE POINTS INSIDE TEH HOUSE
+				//////////////
 				new BehaviorSequence(
 				{
-						new BehaviorConditional(BT_Conditions::IsEnergLow),
-						new BehaviorAction(BT_Actions::UseFood)
-				}),
-
-				new BehaviorSequence(
-				{
-						new BehaviorConditional(BT_Conditions::IsHealthLow),
-						new BehaviorAction(BT_Actions::UseHealth)
-				}),
-
-
-				new BehaviorSequence(
-				{
+					//has the location of a house that needs visiting
+					//all points in the must be searched
+					//seek those points
 					new BehaviorConditional(BT_Conditions::NeedsVisiting),
+					new BehaviorConditional(BT_Conditions::AllPointsSeached),
 					new BehaviorAction(BT_Actions::ChangeToSeek),
-					new BehaviorConditional(BT_Conditions::IsInsideHouse)
 				}),
 
-
-
-
-//				new BehaviorSequence(
-//				{
-//						new BehaviorSequence(
-//						{
-//								new BehaviorConditional(BT_Conditions::IsEnemyNearBy),
-//									new BehaviorSelector(
-//										{
-//											new BehaviorSequence(
-//											{
-//													new BehaviorSequence(
-//													{
-//														new BehaviorConditional(BT_Conditions::HasPistol),
-//														new BehaviorAction(BT_Actions::ChangeToFace)
-//													}),
-//
-//													new BehaviorConditional(BT_Conditions::EnemyInSight),
-//													new BehaviorAction(BT_Actions::ShootEnemy)
-//											}),
-///*											new BehaviorSequence(
-//											{
-//													new BehaviorConditional(BT_Conditions::EnemyInSight),
-//													new BehaviorAction(BT_Actions::ShootEnemy)
-//											}),	*/	
-//										}),
-//										new BehaviorAction(BT_Actions::ChangeToFlee),
-//						}),
-//				}),
+				//////////////
+				// EXPLORES THE WORLD
+				// CHECKS POINTS
+				//////////////
 				new BehaviorSequence(
 				{
-					new BehaviorConditional(BT_Conditions::IsHouseSeen),
-					new BehaviorAction(BT_Actions::AddHouse)
-				}),
-
-				new BehaviorSequence(
-				{
-					new BehaviorConditional(BT_Conditions::Explore),
-					new BehaviorAction(BT_Actions::ChangeToSeek),
+					new BehaviorConditional(BT_Conditions::HasToExplore),
 					new BehaviorConditional(BT_Conditions::IsAtPoint),
+					new BehaviorAction(BT_Actions::ChangeToSeek),				
 				}),
-				//new BehaviorAction(BT_Actions::ChangeToWander)
+				//////////////
+				// IF NOTHING ELSE, WANDER
+				//////////////
+				new BehaviorAction(BT_Actions::ChangeToWander)
 			}));
 }
+
+void Plugin::UpdateBlackBoard(float dt)
+{
+	m_HousesFOV.clear();
+	m_EnemiesFOV.clear();
+	m_ItemsFOV.clear();
+	m_PurgeFOV.clear();
+	GetHousesInFOV();
+	GetEntitiesInFOV();
+	UpdatePurgeZoneInfo(dt);
+
+	//INFO
+	m_pBlackBoard->ChangeData("AgentInfo", m_pInterface->Agent_GetInfo());
+	m_pBlackBoard->ChangeData("HousesFOV", m_HousesFOV);
+	m_pBlackBoard->ChangeData("EnemiesFOV", m_EnemiesFOV);
+	m_pBlackBoard->ChangeData("ItemsFOV", m_ItemsFOV);
+	m_pBlackBoard->ChangeData("PurgeFOV", m_PurgeFOV);
+
+	//STEERING
+	m_pBlackBoard->ChangeData("SteeringOutput", m_pSteeringOutput);
+}
+
+void Plugin::UpdatePurgeZoneInfo(float dt)
+{
+	float timeSinceBitten{};
+	bool bittenAgent;
+	bool bittenMine{};
+	m_pBlackBoard->GetData("TimeBitten", timeSinceBitten);
+	m_pBlackBoard->GetData("BittenAgent", bittenAgent);
+	m_pBlackBoard->GetData("BittenMine", bittenMine);
+	if (bittenMine)
+	{
+		timeSinceBitten += dt;
+		m_pBlackBoard->ChangeData("TimeBitten", timeSinceBitten);
+	}
+}
+
+
+
+
+
+//////////////
+// Trash
+//////////////
+
+//auto worldStats = m_pInterface->World_GetStats();
+//
+//m_pSteeringOutput = SteeringPlugin_Output();
+//
+//auto steering = SteeringPlugin_Output();
+////steering.AutoOrient = false;
+//
+//
+////Use the Interface (IAssignmentInterface) to 'interface' with the AI_Framework
+//auto agentInfo = m_pInterface->Agent_GetInfo();
+//
+//auto position = agentInfo.Position;
+//
+//steering.AutoOrient = true;
+//
+////Use the navmesh to calculate the next navmesh point
+////auto nextTargetPos = m_pInterface->NavMesh_GetClosestPathPoint(checkpointLocation);
+//
+////OR, Use the mouse target
+//auto nextTargetPos = m_pInterface->NavMesh_GetClosestPathPoint(m_Target); //Uncomment this to use mouse position as guidance
+////m_pInterface
+//
+//
+////auto vHousesInFOV = GetHousesInFOV();//uses m_pInterface->Fov_GetHouseByIndex(...)
+////auto vEntitiesInFOV = GetEntitiesInFOV(); //uses m_pInterface->Fov_GetEntityByIndex(...)
+//
+////UINT maxCapacity = m_pInterface->Inventory_GetCapacity();
+//
+////for (auto& e : vEntitiesInFOV)
+////{
+////	if (e.Type == eEntityType::PURGEZONE)
+////	{
+////		PurgeZoneInfo zoneInfo;
+////		m_pInterface->PurgeZone_GetInfo(e, zoneInfo);
+////		//std::cout << "Purge Zone in FOV:" << e.Location.x << ", "<< e.Location.y << "---Radius: "<< zoneInfo.Radius << std::endl;
+////	}
+////	if (e.Type == eEntityType::ITEM)
+////	{
+////		
+////		ItemInfo itemInfo;
+////		bool isIn = m_pInterface->Item_Grab(e, itemInfo);
+////		if (isIn)
+////		{
+////			if (m_InventorySlot == maxCapacity)
+////			{
+////				--m_InventorySlot;
+////				m_pInterface->Inventory_RemoveItem(m_InventorySlot);
+////			}
+////			if (m_InventorySlot < maxCapacity)
+////			{
+////				m_pInterface->Inventory_AddItem(m_InventorySlot, itemInfo);
+////				//++m_InventorySlot;
+////			}
+////		}
+////			
+////		
+////		//std::cout << " in FOV:" << e.Location.x << ", "<< e.Location.y << std::endl;
+////	}
+//
+////}
+//
+////INVENTORY USAGE DEMO
+////********************
+//
+//if (m_GrabItem)
+//{
+//	ItemInfo item;
+//	//Item_Grab > When DebugParams.AutoGrabClosestItem is TRUE, the Item_Grab function returns the closest item in range
+//	//Keep in mind that DebugParams are only used for debugging purposes, by default this flag is FALSE
+//	//Otherwise, use GetEntitiesInFOV() to retrieve a vector of all entities in the FOV (EntityInfo)
+//	//Item_Grab gives you the ItemInfo back, based on the passed EntityHash (retrieved by GetEntitiesInFOV)
+//	if (m_pInterface->Item_Grab({}, item))
+//	{
+//		//Once grabbed, you can add it to a specific inventory slot
+//		//Slot must be empty
+//		m_pInterface->Inventory_AddItem(m_InventorySlot, item);
+//	}
+//}
+//
+//if (m_UseItem)
+//{
+//	//Use an item (make sure there is an item at the given inventory slot)
+//	m_pInterface->Inventory_UseItem(m_InventorySlot);
+//}
+//
+//if (m_RemoveItem)
+//{
+//	//Remove an item from a inventory slot
+//	m_pInterface->Inventory_RemoveItem(m_InventorySlot);
+//}
+//
+////Simple Seek Behaviour (towards Target)
+//steering.LinearVelocity = nextTargetPos - agentInfo.Position; //Desired Velocity
+//steering.LinearVelocity.Normalize(); //Normalize Desired Velocity
+//steering.LinearVelocity *= agentInfo.MaxLinearSpeed; //Rescale to Max Speed
+//
+//if (Distance(nextTargetPos, agentInfo.Position) < 2.f)
+//{
+//	steering.LinearVelocity = Elite::ZeroVector2;
+//}
+//
+////steering.AngularVelocity = m_AngSpeed; //Rotate your character to inspect the world while walking
+//steering.AutoOrient = true; //Setting AutoOrient to TRue overrides the AngularVelocity
+//
+//steering.RunMode = m_CanRun; //If RunMode is True > MaxLinSpd is increased for a limited time (till your stamina runs out)

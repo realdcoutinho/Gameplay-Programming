@@ -1,13 +1,6 @@
 #pragma once
 #pragma region MISC
 #include <string>
-#include <vector>
-#include <iostream>
-
-using namespace std;
-
-
-
 
 struct SteeringPlugin_Output
 {
@@ -44,12 +37,13 @@ struct GameDebugParams //Debuggin Purposes only (Ignored during release build)
 	bool RenderUI = false; //Render Player UI (Parameters)
 	bool AutoGrabClosestItem = false; //Auto Grab closest item (Item_Grab)
 	std::string LevelFile = "GameLevel.gppl"; //Level to load?
-	int Seed = 1234; //Seed for random generator
+	int Seed = -1; //Seed for random generator
 	int StartingDifficultyStage = 0; // Overwrites the difficulty stage
 	bool InfiniteStamina = false; // Agent has infinite stamina
 	bool SpawnDebugPistol = false; // Spawns pistol with 1000 ammo at start
-	bool SpawnDebugShotgun = false; // Spawns pistol with 1000 ammo at start
-	bool SpawnPurgeZonesOnMiddleClick = false; // Middle mouse clicks spawn purge zones
+	bool SpawnDebugShotgun = false; // Spawns shotgun with 1000 ammo at start
+	bool SpawnPurgeZonesOnMiddleClick = false; // Middle mouse clicks spawns purge zone
+	bool SpawnZombieOnRightClick = false; // Right mouse clicks spawns zombie
 	bool PrintDebugMessages = true;
 	bool ShowDebugItemNames = true;
 };
@@ -119,13 +113,6 @@ struct HouseInfo
 	Elite::Vector2 Size;
 };
 
-struct RegisteredHouse
-{
-	Elite::Vector2 Center;
-	Elite::Vector2 Size;
-	float timeSinceVisited;
-};
-
 struct EnemyInfo
 {
 	eEnemyType Type;
@@ -191,7 +178,4 @@ struct AgentInfo
 	float GrabRange;
 	float AgentSize;
 };
-
-
-
 #pragma endregion

@@ -17,8 +17,6 @@ SteeringPlugin_Output Seek::CalculateSteering(SteeringPlugin_Output& steering, A
 	steering.LinearVelocity.Normalize(); //Normalize Desired Velocity
 	steering.LinearVelocity *= pInterface->Agent_GetInfo().MaxLinearSpeed;
 
-	steering.LinearVelocity;
-
 	return steering;
 }
 
@@ -53,47 +51,59 @@ SteeringPlugin_Output Face::CalculateSteering(SteeringPlugin_Output& steering, A
 	AgentInfo agent = pInterface->Agent_GetInfo();
 	Vector2 ePositon = pAgent->GetEnemyPosition();
 
-	auto target = pAgent->GetSeekPoint(); //sets the random point as the new target
+	Vector2 agentToEnemy = ePositon - agent.Position;
+	float angleToEnemy = atan2(agentToEnemy.y, agentToEnemy.x);
 
-	//agent.
-	Vector2 targetVector{ agent.Position - ePositon };
-	Vector2 agentDirection{ cosf(agent.Orientation), sinf(agent.Orientation) };
+	if (abs(angleToEnemy - agent.Orientation) > static_cast<float>(M_PI))
+	{
 
-	float angle{ acosf(Dot(agentDirection, targetVector) / (agentDirection.Magnitude() * targetVector.Magnitude())) };
-	Vector3 targetVectorZ{ ePositon - agent.Position };
-	Vector3 agentDirectionZ{ cosf(agent.AngularVelocity), sinf(agent.AngularVelocity), 0.0f };
-	Vector3 crossZCheck{ Cross(targetVectorZ, agentDirectionZ) };
-	if (crossZCheck.z > 0)
-		angle = -angle;
-	float haltAngle{ static_cast<float>(ToRadians(0.005f)) };
+		if (angleToEnemy > agent.Orientation)
+		{
+			angleToEnemy -= 2.f * static_cast<float>(M_PI);
+		}
+		else
+		{
+			angleToEnemy += 2.f * static_cast<float>(M_PI);
+		}
+	}
 
-	if (haltAngle <= angle)
+	if (angleToEnemy - agent.Orientation > 0)
 	{
 		steering.AngularVelocity = agent.MaxAngularSpeed;
 	}
-	else if (angle <= haltAngle)
+	if (angleToEnemy - agent.Orientation < 0)
 	{
-		steering.AngularVelocity = agent.MaxAngularSpeed;
+		steering.AngularVelocity = -agent.MaxAngularSpeed;
 	}
-	if (-haltAngle <= angle && angle <= haltAngle)
-	{
-		steering.AngularVelocity = 0;
-	}
-	steering.AngularVelocity = angle;
+	steering.LinearVelocity = agentToEnemy.GetNormalized();
+
+	return steering;
+}
+
+SteeringPlugin_Output Turn::CalculateSteering(SteeringPlugin_Output& steering, Agent* pAgent, IExamInterface* pInterface)
+{
+	steering.AutoOrient = false;
+	AgentInfo agent = pInterface->Agent_GetInfo();
+	//ISteeringBehavior* pSeek = new Seek();
+	//pSeek->CalculateSteering(steering, pAgent, pInterface);
+	steering.AngularVelocity = agent.MaxAngularSpeed;
 	return steering;
 }
 
 
 SteeringPlugin_Output Flee::CalculateSteering(SteeringPlugin_Output& steering, Agent* pAgent, IExamInterface* pInterface)
 {
-	AgentInfo agent = pInterface->Agent_GetInfo();
-	Vector2 ePositon = pAgent->GetEnemyPosition();
 
-	Vector2 runFrom = agent.Position - ePositon;
+	AgentInfo agent = pInterface->Agent_GetInfo();
+	auto flee = pAgent->GetFleePoint();
+
+	Vector2 runFrom = agent.Position - flee;
 
 	steering.LinearVelocity = runFrom;
 	steering.LinearVelocity.Normalize();
 	steering.LinearVelocity *= agent.MaxLinearSpeed;
+
+	pInterface->NavMesh_GetClosestPathPoint(agent.Position - flee);
 
 	return steering;
 }

@@ -187,7 +187,6 @@
     <ClInclude Include="Blackboard.h" />
     <ClInclude Include="EBehaviorTree.h" />
     <ClInclude Include="EDecisionMaking.h" />
-    <ClInclude Include="HouseManager.h" />
     <ClInclude Include="Inventory.h" />
     <ClInclude Include="Plugin.h" />
     <ClInclude Include="stdafx.h" />
@@ -196,7 +195,6 @@
   <ItemGroup>
     <ClCompile Include="Agent.cpp" />
     <ClCompile Include="EBehaviorTree.cpp" />
-    <ClCompile Include="HouseManager.cpp" />
     <ClCompile Include="Inventory.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="stdafx.cpp">

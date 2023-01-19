@@ -50,19 +50,27 @@ private:
 	//////////////
 	// MINE
 	//////////////
-	Blackboard* m_pBlackBoard;
-	Agent* m_pAgent;
-	BehaviorTree* m_pBehaviorTree;
+	Blackboard* m_pBlackBoard = nullptr;
+	Agent* m_pAgent = nullptr;
+	BehaviorTree* m_pBehaviorTree = nullptr;
 
 	SteeringPlugin_Output m_pSteeringOutput;
 
 	Blackboard* CreateAgentBlackBoard(Agent* pAgent);
 	void CreateBehaviorTree();
-	void UpdateBlackBoard();
+	void UpdateBlackBoard(float dt);
+	void UpdatePurgeZoneInfo(float dt);
 
 	vector<HouseInfo> m_HousesFOV;
 	vector<EntityInfo> m_EnemiesFOV;
 	vector<EntityInfo> m_ItemsFOV;
+	vector<EntityInfo> m_PurgeFOV;
+
+
+	//////////////
+	// DEBBUGING PURPOSES
+	//////////////
+	void DrawPointsToExplore() const;
 };
 
 //ENTRY

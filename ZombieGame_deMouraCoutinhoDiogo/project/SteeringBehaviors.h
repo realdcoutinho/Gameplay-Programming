@@ -16,6 +16,10 @@ class ISteeringBehavior
 {
 public:
 	ISteeringBehavior() = default;
+	ISteeringBehavior(const ISteeringBehavior& other) = delete; //copy constructor
+	ISteeringBehavior& operator=(const ISteeringBehavior& other) = delete; // assignment operator
+	ISteeringBehavior(ISteeringBehavior&& other) = delete; // move constructor
+	ISteeringBehavior& operator=(ISteeringBehavior&& other) = delete; // move assignment operator
 	virtual ~ISteeringBehavior() = default;
 
 	virtual SteeringPlugin_Output CalculateSteering(SteeringPlugin_Output& steering, Agent* pAgent, IExamInterface* pInterface) = 0;
@@ -30,12 +34,16 @@ protected:
 #pragma endregion
 
 /////////////////////////////////////////
-////FACE
+////Wander
 ////****
 class Wander : public ISteeringBehavior
 {
 public:
 	Wander() = default;
+	Wander(const Wander& other) = delete; //copy constructor
+	Wander& operator=(const Wander& other) = delete; // assignment operator
+	Wander(Wander&& other) = delete; // move constructor
+	Wander& operator=(Wander&& other) = delete; // move assignment operator
 	virtual ~Wander() = default;
 
 	SteeringPlugin_Output CalculateSteering(SteeringPlugin_Output& steering, Agent* pAgent, IExamInterface* pInterface) override;
@@ -48,6 +56,10 @@ class Seek : public ISteeringBehavior
 {
 public:
 	Seek() = default;
+	Seek(const Seek& other) = delete; //copy constructor
+	Seek& operator=(const Seek& other) = delete; // assignment operator
+	Seek(Seek&& other) = delete; // move constructor
+	Seek& operator=(Seek&& other) = delete; // move assignment operator
 	virtual ~Seek() = default;
 	//Seek Behaviour
 	SteeringPlugin_Output CalculateSteering(SteeringPlugin_Output& steering, Agent* pAgent, IExamInterface* pInterface) override;
@@ -60,7 +72,28 @@ class Face : public ISteeringBehavior
 {
 public:
 	Face() = default;
+	Face(const Face& other) = delete; //copy constructor
+	Face& operator=(const Face& other) = delete; // assignment operator
+	Face(Face&& other) = delete; // move constructor
+	Face& operator=(Face&& other) = delete; // move assignment operator
 	virtual ~Face() = default;
+
+	SteeringPlugin_Output CalculateSteering(SteeringPlugin_Output& steering, Agent* pAgent, IExamInterface* pInterface) override;
+};
+
+/////////////////////////////////////////
+////Turn
+////****
+class Turn : public ISteeringBehavior
+{
+public:
+	Turn() = default;
+	Turn(const Turn& other) = delete; //copy constructor
+	Turn& operator=(const Turn& other) = delete; // assignment operator
+	Turn(Turn&& other) = delete; // move constructor
+	Turn& operator=(Turn&& other) = delete; // move assignment operator
+	virtual ~Turn() = default;
+
 	SteeringPlugin_Output CalculateSteering(SteeringPlugin_Output& steering, Agent* pAgent, IExamInterface* pInterface) override;
 };
 
@@ -71,7 +104,12 @@ class Flee : public ISteeringBehavior
 {
 public:
 	Flee() = default;
+	Flee(const Flee& other) = delete; //copy constructor
+	Flee& operator=(const Flee& other) = delete; // assignment operator
+	Flee(Flee&& other) = delete; // move constructor
+	Flee& operator=(Flee&& other) = delete; // move assignment operator
 	virtual ~Flee() = default;
+
 	SteeringPlugin_Output CalculateSteering(SteeringPlugin_Output& steering, Agent* pAgent, IExamInterface* pInterface) override;
 };
 

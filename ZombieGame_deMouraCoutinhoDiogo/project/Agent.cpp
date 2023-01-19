@@ -14,8 +14,8 @@ using namespace Elite;
 Agent::Agent(IExamInterface* pInterface)
 	: m_pInterface{pInterface},
 	m_Agent{ pInterface->Agent_GetInfo() },
-	m_MinimumEnergy{4.0f},
-	m_MinimumHealth{7.0f}
+	m_MinimumEnergy{1.0f},
+	m_MinimumHealth{7.9f}
 {
 	std::cout << "agent class created" << '\n';
 	
@@ -27,27 +27,6 @@ Agent::Agent(IExamInterface* pInterface)
 	m_Invetory = new Inventory();
 }
 
-void Agent::CreateExplorePoints()
-{
-	float nrOfPoints{ 10 };
-	float radius{ 225.0f };
-	float intervals{ 3.14f * 2 / nrOfPoints };
-
-	for (int nr{ 0 }; nr < nrOfPoints; ++nr)
-	{
-		//Vector2 angle{ cosf(intervals + i * intervals/2)}
-		Vector2 angle{ cosf(intervals * nr), sinf(intervals * nr) };
-		Vector2 point = angle * radius;
-		m_PointsToExplore.push_back(point);
-	}
-
-}
-
-vector<Vector2>& Agent::GetExplorationPoints()
-{
-	return m_PointsToExplore;
-}
-
 Agent::~Agent()
 {
 	delete m_pInterface;
@@ -56,6 +35,40 @@ Agent::~Agent()
 	delete m_pSeek;
 	delete m_pFace;
 	delete m_pFlee;
+	delete m_pTurn;
+}
+
+void Agent::CreateExplorePoints()
+{
+	float nrOfPoints{ 8 };
+	float intervals{ static_cast<float>(M_PI) * 2 / nrOfPoints };
+	float intervals1{ static_cast<float>(M_PI) * 2 / 5 };
+
+
+
+
+	float radius5{ 230.0f };
+	float radius4{ 200.0f };
+	float radius3{ 180.0f };
+	float radius2{ 120.0f };
+	float radius1{ 23.0f };
+
+
+	for (int nr{ 0 }; nr < nrOfPoints; ++nr)
+	{
+		Vector2 angle{ cosf(intervals * nr), sinf(intervals * nr) };
+		Vector2 point3 = angle * radius3;
+		Vector2 point2 = angle * radius2;
+		m_PointsToExplore.push_back(point3);
+		m_PointsToExplore.push_back(point2);
+	}
+	for (int nr{ 0 }; nr < 5; ++nr)
+	{
+		Vector2 angle{ cosf(intervals1 * nr), sinf(intervals1 * nr) };
+		Vector2 point1 = angle * radius1;
+		m_PointsToExplore.push_back(point1);
+	}
+
 }
 
 #pragma region Steering
@@ -65,6 +78,7 @@ void Agent::InitializeSteeringBehaviors()
 	m_pSeek = new Seek();
 	m_pFace = new Face();
 	m_pFlee = new Flee();
+	m_pTurn = new Turn();
 }
 
 //WANDER
@@ -110,7 +124,34 @@ void Agent::SetFlee(SteeringPlugin_Output& steering)
 	m_pFlee->CalculateSteering(steering, this, m_pInterface);
 }
 
+void Agent::SetFleePoint(Vector2& seekPoint)
+{
+	m_FleePoint = seekPoint;
+}
+
+Vector2 Agent::GetFleePoint() const
+{
+	return m_FleePoint;
+}
+
+//TURN
+void Agent::SetTurn(SteeringPlugin_Output& steering)
+{
+	m_pTurn->CalculateSteering(steering, this, m_pInterface);
+}
+
 #pragma endregion
+
+IExamInterface* Agent::GetInterface() const
+{
+	return m_pInterface;
+}
+
+vector<Vector2>& Agent::GetExplorationPoints()
+{
+	return m_PointsToExplore;
+}
+
 
 Inventory* Agent::GetInventory() const
 {
@@ -119,31 +160,53 @@ Inventory* Agent::GetInventory() const
 
 vector<VisitedHouse>& Agent::GetRegisteredHouses() 
 {
-	return m_RegisteredHouses;
+	return m_VisitedHouses;
 }
 
 void Agent::RegisterHouse(HouseInfo& rHouse)
 {
-	m_RegisteredHouses.push_back(VisitedHouse(rHouse));
+	m_VisitedHouses.push_back(VisitedHouse(rHouse));
 }
+
 
 void Agent::Update(float dt, IExamInterface* pInterface)
 {
 	m_Agent = pInterface->Agent_GetInfo();
-	m_Agent.Position;
+	UpdateHouses(dt);
+	CheckExplorePointsDistances();
 
-	for (auto& house : m_RegisteredHouses)
+
+
+}
+
+void Agent::UpdateHouses(float dt)
+{
+	for (auto& house : m_VisitedHouses)
 	{
-		house.Update(dt);
+		house.Update(dt, m_Agent.Position);
 	}
 }
 
-float Agent::GetMinimumHealth()
+void Agent::CheckExplorePointsDistances()
+{
+	for (size_t pos{ 0 }; pos < m_PointsToExplore.size(); ++pos)
+	{
+		//if agent if within a certain distance of the point, remove from the vector
+		//this makes sure he wont go back to go somewhere he has already been
+		auto distance = DistanceSquared(m_Agent.Position, m_PointsToExplore[pos]);
+		if (distance < 80.0f)
+		{
+			m_PointsToExplore.erase(m_PointsToExplore.begin() + pos);
+		}
+	}
+}
+
+float Agent::GetMinimumHealth() const
 {
 	return m_MinimumHealth;
 }
 
-float Agent::GetMinimumEnergy()
+float Agent::GetMinimumEnergy() const
 {
 	return m_MinimumEnergy;
 }
